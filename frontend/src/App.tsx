@@ -8,6 +8,7 @@ import SerialDetails from "./pages/SerialDetails";
 import GameDetails from "./pages/GameDetails";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ManagementLayout from "./pages/management/ManagementLayout";
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/management" element={<ManagementLayout />} />
       </Routes>
 
       <Footer />
