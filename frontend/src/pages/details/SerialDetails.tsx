@@ -1,6 +1,6 @@
-import type { SerialDetailsProps } from "../../types/Types";
+function SerialDetails() {
+  const genres = ["Drama", "Acción", "Bélico"];
 
-function SerialDetails(serialDetailsProps: SerialDetailsProps) {
   return (
     <main className="px-4 sm:px-8 md:px-20 lg:px-40 flex flex-1 justify-center py-10">
       <div className="layout-content-container flex flex-col max-w-[1200px] flex-1">
@@ -9,32 +9,32 @@ function SerialDetails(serialDetailsProps: SerialDetailsProps) {
             <img
               className="w-full max-w-sm bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl aspect-2/3"
               data-alt="The Witcher series poster with Geralt of Rivia"
-              src={serialDetailsProps.posterUrl}
+              src={"example"}
             />
           </div>
           <div className="md:col-span-2 lg:col-span-2 flex flex-col gap-4 text-white">
             <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-[-0.033em]">
-              {serialDetailsProps.title}
+              {"example"}
             </h1>
             <div className="flex gap-3 flex-wrap">
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {serialDetailsProps.fileSize}GB
+                  {"example"}GB
                 </p>
               </div>
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {serialDetailsProps.temporades} Temporadas
+                  {"example"} Temporadas
                 </p>
               </div>
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {serialDetailsProps.platform}
+                  {"example"}
                 </p>
               </div>
             </div>
             <div className="flex gap-3 pt-2 flex-wrap">
-              {serialDetailsProps.genres.map((genre, index) => (
+              {genres.map((genre, index) => (
                 <div
                   key={index}
                   className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-white/20 hover:bg-primary/20 hover:border-primary/50 transition-colors cursor-pointer px-4"
@@ -47,7 +47,7 @@ function SerialDetails(serialDetailsProps: SerialDetailsProps) {
             </div>
             <div className="pt-4 max-w-2xl">
               <p className="text-white/70 text-base leading-relaxed">
-                {serialDetailsProps.sinopsis}
+                {"example"}
               </p>
             </div>
           </div>
