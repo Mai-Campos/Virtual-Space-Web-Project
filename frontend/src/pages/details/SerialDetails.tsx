@@ -1,4 +1,4 @@
-import type { SerialDetailsProps } from "../types/Types";
+import type { SerialDetailsProps } from "../../types/Types";
 
 function SerialDetails(serialDetailsProps: SerialDetailsProps) {
   return (

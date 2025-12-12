@@ -1,20 +1,10 @@
 import { useState } from "react";
+import MultiSelect from "../../components/MultiSelect";
 
 function VideoGamesManagement() {
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const handleCategoryChange = (e) => {
-    const value = e.target.value;
-    if (value && !selectedCategories.includes(value)) {
-      setSelectedCategories([...selectedCategories, value]);
-    }
-    // opcional: resetear select a placeholder
-    e.target.value = "";
-  };
-
-  const removeCategory = (cat) => {
-    setSelectedCategories(selectedCategories.filter((c) => c !== cat));
-  };
+  const categoryOptions = ["RPG", "Acción", "Aventura", "Shooter", "Rol"];
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -84,35 +74,12 @@ function VideoGamesManagement() {
                   <p className="text-white text-base font-medium leading-normal pb-2">
                     Categorías
                   </p>
-                  <select
-                    className="form-select flex w-full min-w-0 flex-1 overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 p-3 text-base font-normal leading-normal"
-                    onChange={handleCategoryChange}
-                  >
-                    <option value="">Selecciona categoría</option>
-                    <option value="Acción">Acción</option>
-                    <option value="Aventura">Aventura</option>
-                    <option value="RPG">RPG</option>
-                    <option value="Estrategia">Estrategia</option>
-                    <option value="Simulación">Simulación</option>
-                  </select>
-
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedCategories.map((cat) => (
-                      <span
-                        key={cat}
-                        className="flex items-center gap-1 bg-primary/80 text-white text-sm px-3 py-1 rounded-full"
-                      >
-                        {cat}
-                        <button
-                          type="button"
-                          onClick={() => removeCategory(cat)}
-                          className="text-white/70 hover:text-white"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
+                  <MultiSelect
+                    options={categoryOptions}
+                    label="Categorías"
+                    selected={selectedCategories}
+                    setSelected={setSelectedCategories}
+                  />
                 </label>
               </div>
 

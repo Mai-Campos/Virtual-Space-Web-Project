@@ -1,4 +1,4 @@
-import type { MovieDetailsProps } from "../types/Types";
+import type { MovieDetailsProps } from "../../types/Types";
 
 function MovieDetails(movieDetailsProps: MovieDetailsProps) {
   return (

@@ -2,13 +2,14 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
-import Catalog from "./pages/Catalog";
-import MovieDetails from "./pages/MovieDetails";
-import SerialDetails from "./pages/SerialDetails";
-import GameDetails from "./pages/GameDetails";
+import MovieDetails from "./pages/details/MovieDetails";
+import SerialDetails from "./pages/details/SerialDetails";
+import GameDetails from "./pages/details/GameDetails";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ManagementLayout from "./pages/management/ManagementLayout";
+import CatalogLayout from "./pages/catalog/CatalogLayout";
+import EmployeesManagement from "./pages/management/EmployeesManagement";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/catalog" element={<Catalog />} />
+        <Route path="/catalog" element={<CatalogLayout />} />
         <Route
           path="/movie-details"
           element={
@@ -46,7 +47,7 @@ function App() {
               posterUrl={
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuC77NATVZsRZNyAAJawoPslJl6TYhpRakh1O6oDThJoWGuitVyXeFAq50cDdWQ_DRXlYVZ7b0vAluT2SCqY6LmFoI7j8suBQre9OYGTzd5YPeuzPo2nisEibHhAx-hgqcJv_afvhQWGBbBKXeFEX248pw_2wm1UODX2kAaOXQbuVVNaPOUIVEzDwpROnT2GRQdNWVPK4P6IWjuJ60JIW2GBepa5uE4x8ElFpUfswMDEy8dKBG1s93VLfy3DBX8T1iv-7M213c3D6lY"
               }
-              temporades={3}
+              temporadas={3}
               platform={"Netflix"}
             />
           }
@@ -70,6 +71,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/management" element={<ManagementLayout />} />
+        <Route path="/employees-management" element={<EmployeesManagement />} />
       </Routes>
 
       <Footer />

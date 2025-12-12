@@ -1,20 +1,10 @@
 import { useState } from "react";
+import MultiSelect from "../../components/MultiSelect";
 
 function MoviesManagement() {
-  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedGenres, setselectedGenres] = useState<string[]>([]);
 
-  const handleGenreChange = (e) => {
-    const value = e.target.value;
-    if (value && !selectedGenres.includes(value)) {
-      setSelectedGenres([...selectedGenres, value]);
-    }
-    // opcional: resetear select a placeholder
-    e.target.value = "";
-  };
-
-  const removeGenre = (gen) => {
-    setSelectedGenres(selectedGenres.filter((g) => g !== gen));
-  };
+  const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -103,47 +93,12 @@ function MoviesManagement() {
                   <p className="text-white text-base font-medium leading-normal pb-2">
                     Géneros
                   </p>
-                  <select
-                    className="form-select flex w-full min-w-0 flex-1 overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 p-3 text-base font-normal leading-normal"
-                    onChange={handleGenreChange}
-                  >
-                    <option className="text-primary" value="">
-                      Seleccionar géneros
-                    </option>
-                    <option className="text-primary" value="Acción">
-                      Acción
-                    </option>
-                    <option className="text-primary" value="Aventura">
-                      Aventura
-                    </option>
-                    <option className="text-primary" value="RPG">
-                      Terror
-                    </option>
-                    <option className="text-primary" value="Estrategia">
-                      Fantasía
-                    </option>
-                    <option className="text-primary" value="Simulación">
-                      Drama
-                    </option>
-                  </select>
-
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedGenres.map((gen) => (
-                      <span
-                        key={gen}
-                        className="flex items-center gap-1 bg-primary/80 text-white text-sm px-3 py-1 rounded-full"
-                      >
-                        {gen}
-                        <button
-                          type="button"
-                          onClick={() => removeGenre(gen)}
-                          className="text-white/70 hover:text-white"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
+                  <MultiSelect
+                    options={genresOptions}
+                    label="Géneros"
+                    selected={selectedGenres}
+                    setSelected={setselectedGenres}
+                  />
                 </label>
               </div>
 

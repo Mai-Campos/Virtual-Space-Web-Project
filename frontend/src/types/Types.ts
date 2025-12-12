@@ -19,7 +19,7 @@ export type SerialDetailsProps = {
   posterUrl: string;
   fileSize: number;
   genres: string[];
-  temporades: number;
+  temporadas: number;
   platform: string;
 };
 
@@ -29,4 +29,11 @@ export type GameDetailsProps = {
   posterUrl: string;
   fileSize: number;
   categories: string[];
+};
+
+export type MultiSelectProps = {
+  options: string[];
+  label: string;
+  selected: string[];
+  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 };
