@@ -1,5 +1,11 @@
+import { series } from "../../data/series";
+import { useParams } from "react-router-dom";
+
 function SerialDetails() {
-  const genres = ["Drama", "Acción", "Bélico"];
+  const params = useParams();
+
+  const id = parseInt(params.id || "0", 10);
+  const serie = series.find((s) => s.id === id);
 
   return (
     <main className="px-4 sm:px-8 md:px-20 lg:px-40 flex flex-1 justify-center py-10">
@@ -9,32 +15,32 @@ function SerialDetails() {
             <img
               className="w-full max-w-sm bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl aspect-2/3"
               data-alt="The Witcher series poster with Geralt of Rivia"
-              src={"example"}
+              src={serie?.imageUrl}
             />
           </div>
           <div className="md:col-span-2 lg:col-span-2 flex flex-col gap-4 text-white">
             <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-[-0.033em]">
-              {"example"}
+              {serie?.nombre}
             </h1>
             <div className="flex gap-3 flex-wrap">
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {"example"}GB
+                  {serie?.peso} GB
                 </p>
               </div>
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {"example"} Temporadas
+                  {serie?.temporadas} Temporadas
                 </p>
               </div>
               <div className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4">
                 <p className="text-white/90 text-sm font-medium leading-normal">
-                  {"example"}
+                  {serie?.plataforma}
                 </p>
               </div>
             </div>
             <div className="flex gap-3 pt-2 flex-wrap">
-              {genres.map((genre, index) => (
+              {serie?.generos.map((genre, index) => (
                 <div
                   key={index}
                   className="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-white/20 hover:bg-primary/20 hover:border-primary/50 transition-colors cursor-pointer px-4"
@@ -47,7 +53,7 @@ function SerialDetails() {
             </div>
             <div className="pt-4 max-w-2xl">
               <p className="text-white/70 text-base leading-relaxed">
-                {"example"}
+                {serie?.sinopsis}
               </p>
             </div>
           </div>

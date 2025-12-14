@@ -10,6 +10,8 @@ import PlatformManagement from "./PlatformManagement";
 function ManagementLayout() {
   const [activeTab, setActiveTab] = useState("Videojuegos");
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const tabs = [
     "Videojuegos",
     "Películas",
@@ -24,7 +26,7 @@ function ManagementLayout() {
     <main className="flex-1 mt-6 p-4">
       {/* TABS */}
       <div className="pb-3 mt-4 ">
-        <div className="flex border-b border-white/10 gap-8 ">
+        <div className="hidden md:flex border-b border-white/10 gap-8">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -38,6 +40,39 @@ function ManagementLayout() {
               {tab}
             </button>
           ))}
+        </div>
+
+        <div className="md:hidden relative">
+          {/* Botón hamburguesa */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-2 bg-white/5 text-white px-4 py-2 rounded-lg border border-white/10"
+          >
+            ☰ Gestión
+            <span className="text-white/60 text-sm">({activeTab})</span>
+          </button>
+
+          {/* Dropdown */}
+          {menuOpen && (
+            <div className="absolute mt-2 w-56 bg-black border border-white/10 rounded-lg shadow-lg z-50">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                    activeTab === tab
+                      ? "bg-primary text-white"
+                      : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

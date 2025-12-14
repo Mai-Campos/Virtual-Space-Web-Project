@@ -1,5 +1,12 @@
+import { useParams } from "react-router-dom";
+import { movies } from "../../data/movies";
+
 function MovieDetails() {
-  const genres = ["Drama", "Acción", "Bélico"];
+  const params = useParams();
+
+  const id = parseInt(params.id || "0", 10);
+
+  const movie = movies.find((m) => m.id === id);
 
   return (
     <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 py-8 lg:py-12">
@@ -8,16 +15,17 @@ function MovieDetails() {
           <img
             className="aspect-2/3 w-full max-w-sm mx-auto md:max-w-none bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-white/10 rounded-lg"
             data-alt="Póster de la película"
-            src={"example"}
+            src={movie?.imageUrl}
           />
         </div>
         <div className="flex flex-col space-y-6">
           <div className="pb-2">
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-tighter">
-              {"example"}
+              {movie?.nombre}
             </h1>
             <p className="text-white/70 text-base font-normal leading-normal pt-2">
-              <span className="text-primary">Dirigida por:</span> {"example"}
+              <span className="text-primary">Dirigida por:</span>{" "}
+              {movie?.Director}
             </p>
           </div>
           <div>
@@ -25,19 +33,19 @@ function MovieDetails() {
               Sinopsis
             </h2>
             <p className="text-white/80 text-base font-light leading-relaxed">
-              {"example"}
+              {movie?.sinopsis}
             </p>
           </div>
           <div className="flex flex-col space-y-4 pt-2">
             <div>
               <h3 className="text-white font-semibold text-lg mb-2">Géneros</h3>
               <div className="flex flex-wrap gap-2">
-                {genres.map((genre, index) => (
+                {movie?.generos.map((g) => (
                   <span
-                    key={index}
-                    className="inline-block px-3 py-1 text-sm font-medium text-white rounded-full bg-primary"
+                    key={g}
+                    className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full"
                   >
-                    {genre}
+                    {g}
                   </span>
                 ))}
               </div>
@@ -47,7 +55,7 @@ function MovieDetails() {
                 Peso del Archivo
               </h3>
               <p className="text-white/80 text-base font-light">
-                {"example"} GB
+                {movie?.peso} GB
               </p>
             </div>
           </div>

@@ -4,3 +4,12 @@ export type MultiSelectProps = {
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
 };
+
+export type MediaCardProps = {
+  type: "movie" | "series" | "videogame";
+  id: number;
+  title: string;
+  imageUrl: string;
+  sinopsis: string;
+  tags: string[];
+};

@@ -22,9 +22,9 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/catalog" element={<CatalogLayout />} />
-        <Route path="/movie-details" element={<MovieDetails />} />
-        <Route path="/serial-details" element={<SerialDetails />} />
-        <Route path="/game-details" element={<GameDetails />} />
+        <Route path="/movie/details/:id" element={<MovieDetails />} />
+        <Route path="/series/details/:id" element={<SerialDetails />} />
+        <Route path="/videogame/details/:id" element={<GameDetails />} />
 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />

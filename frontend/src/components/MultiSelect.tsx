@@ -22,9 +22,11 @@ export default function MultiSelect({
         className="form-select flex min-w-40 w-auto rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 h-12 p-3 text-base font-normal"
         onChange={(e) => handleAdd(e.target.value)}
       >
-        <option value="">{label}</option>
+        <option value="" className="text-primary">
+          {label}
+        </option>
         {options.map((op) => (
-          <option key={op} value={op}>
+          <option key={op} value={op} className="text-primary">
             {op}
           </option>
         ))}
