@@ -52,9 +52,11 @@ function SerialDetails() {
               ))}
             </div>
             <div className="pt-4 max-w-2xl">
-              <p className="text-white/70 text-base leading-relaxed">
-                {serie?.sinopsis}
-              </p>
+              <div className="border-0 rounded-2xl bg-gray-400/10 p-4 ">
+                <p className="text-white/70 text-base leading-relaxed">
+                  {serie?.sinopsis}
+                </p>
+              </div>
             </div>
           </div>
         </div>

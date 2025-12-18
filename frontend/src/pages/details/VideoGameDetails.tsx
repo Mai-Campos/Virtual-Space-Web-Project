@@ -1,7 +1,7 @@
 import { videogames } from "../../data/videogames";
 import { useParams } from "react-router-dom";
 
-function GameDetails() {
+function VideoGameDetails() {
   const params = useParams();
 
   const id = parseInt(params.id || "0", 10);
@@ -28,9 +28,11 @@ function GameDetails() {
             <h2 className="text-white text-2xl font-bold leading-tight tracking-tight mb-3">
               Sinopsis
             </h2>
-            <p className="text-white/80 text-base font-light leading-relaxed">
-              {videoGame?.sinopsis}
-            </p>
+            <div className="border rounded-2xl bg-gray-400/10 p-4 ">
+              <p className="text-white/80 text-base font-light leading-relaxed">
+                {videoGame?.sinopsis}
+              </p>
+            </div>
           </div>
           <div className="flex flex-col space-y-4 pt-2">
             <div>
@@ -63,4 +65,4 @@ function GameDetails() {
   );
 }
 
-export default GameDetails;
+export default VideoGameDetails;

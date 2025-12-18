@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Footer from "./components/Footer";
 import MovieDetails from "./pages/details/MovieDetails";
 import SerialDetails from "./pages/details/SerialDetails";
-import GameDetails from "./pages/details/GameDetails";
+import GameDetails from "./pages/details/VideoGameDetails";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ManagementLayout from "./pages/management/ManagementLayout";

@@ -32,9 +32,11 @@ function MovieDetails() {
             <h2 className="text-white text-2xl font-bold leading-tight tracking-tight mb-3">
               Sinopsis
             </h2>
-            <p className="text-white/80 text-base font-light leading-relaxed">
-              {movie?.sinopsis}
-            </p>
+            <div className="border-0 rounded-2xl bg-gray-400/10 p-4 ">
+              <p className="text-white/80 text-base font-light leading-relaxed">
+                {movie?.sinopsis}
+              </p>
+            </div>
           </div>
           <div className="flex flex-col space-y-4 pt-2">
             <div>
