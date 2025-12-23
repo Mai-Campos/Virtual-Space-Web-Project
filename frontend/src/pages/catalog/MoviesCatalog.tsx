@@ -2,11 +2,20 @@ import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { movies } from "../../data/movies.js";
 import Card from "../../components/Card.js";
+import Pagination from "../../components/Pagination.js";
+import { usePagination } from "../../hooks/PaginationHook.js";
 
 function MoviesCatalog() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedMovies,
+    setCurrentPage,
+  } = usePagination(movies, 6);
 
   return (
     <main>
@@ -29,7 +38,7 @@ function MoviesCatalog() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {movies.map((p) => (
+        {paginatedMovies.map((p) => (
           <Card
             id={p.id}
             type="movie"
@@ -41,6 +50,12 @@ function MoviesCatalog() {
           ></Card>
         ))}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }

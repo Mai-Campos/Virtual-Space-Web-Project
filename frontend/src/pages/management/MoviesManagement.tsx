@@ -1,11 +1,20 @@
 import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { movies } from "../../data/movies";
+import Pagination from "../../components/Pagination";
+import { usePagination } from "../../hooks/PaginationHook";
 
 function MoviesManagement() {
   const [selectedGenres, setselectedGenres] = useState<string[]>([]);
 
   const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedMovies,
+    setCurrentPage,
+  } = usePagination(movies, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -135,7 +144,7 @@ function MoviesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {movies.map((m) => (
+                {paginatedMovies.map((m) => (
                   <tr
                     key={m.id}
                     className="border-b border-white/10 hover:bg-white/5"
@@ -151,9 +160,7 @@ function MoviesManagement() {
                     <td className="px-6 py-4 font-medium text-white">
                       {m.nombre}
                     </td>
-                    <td className="px-6 py-4 max-w-xs truncate">
-                      {m.sinopsis}
-                    </td>
+                    <td className="px-6 py-4 max-w-xs ">{m.sinopsis}</td>
                     <td className="px-6 py-4">{m.Director}</td>
                     <td className="px-6 py-4 text-center">{m.peso}</td>
                     <td className="px-6 py-4">
@@ -216,6 +223,11 @@ function MoviesManagement() {
           </div>
         </section>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }

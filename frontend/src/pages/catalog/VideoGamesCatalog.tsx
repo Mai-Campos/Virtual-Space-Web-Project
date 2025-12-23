@@ -2,11 +2,20 @@ import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { videogames } from "../../data/videogames";
 import Card from "../../components/Card";
+import { usePagination } from "../../hooks/PaginationHook";
+import Pagination from "../../components/Pagination";
 
 function VideoGamesCatalog() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const categoryOptions = ["RPG", "Acción", "Aventura", "Rol", "Shooter"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedVideogames,
+    setCurrentPage,
+  } = usePagination(videogames, 6);
 
   return (
     <main>
@@ -29,7 +38,7 @@ function VideoGamesCatalog() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {videogames.map((v) => (
+        {paginatedVideogames.map((v) => (
           <Card
             id={v.id}
             key={v.id}
@@ -41,6 +50,11 @@ function VideoGamesCatalog() {
           />
         ))}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }

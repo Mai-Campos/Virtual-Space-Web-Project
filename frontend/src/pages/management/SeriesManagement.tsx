@@ -1,11 +1,20 @@
 import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { series } from "../../data/series";
+import { usePagination } from "../../hooks/PaginationHook";
+import Pagination from "../../components/Pagination";
 
 function SeriesManagement() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedSeries,
+    setCurrentPage,
+  } = usePagination(series, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -147,7 +156,7 @@ function SeriesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {series.map((s) => (
+                {paginatedSeries.map((s) => (
                   <tr
                     key={s.id}
                     className="border-b border-white/10 hover:bg-white/5"
@@ -163,9 +172,7 @@ function SeriesManagement() {
                     <td className="px-6 py-4 font-medium text-white">
                       {s.nombre}
                     </td>
-                    <td className="px-6 py-4 max-w-xs truncate">
-                      {s.sinopsis}
-                    </td>
+                    <td className="px-6 py-4 max-w-xs ">{s.sinopsis}</td>
                     <td className="px-6 py-4">{s.plataforma}</td>
                     <td className="px-6 py-4">{s.temporadas}</td>
                     <td className="px-6 py-4 text-center">{s.peso}</td>
@@ -229,6 +236,11 @@ function SeriesManagement() {
           </div>
         </section>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }

@@ -2,11 +2,20 @@ import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { series } from "../../data/series";
 import Card from "../../components/Card";
+import Pagination from "../../components/Pagination";
+import { usePagination } from "../../hooks/PaginationHook";
 
 function SeriesCatalog() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedSeries,
+    setCurrentPage,
+  } = usePagination(series, 6);
 
   return (
     <main>
@@ -29,7 +38,7 @@ function SeriesCatalog() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {series.map((s) => (
+        {paginatedSeries.map((s) => (
           <Card
             id={s.id}
             key={s.id}
@@ -41,6 +50,11 @@ function SeriesCatalog() {
           />
         ))}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }

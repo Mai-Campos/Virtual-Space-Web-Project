@@ -13,3 +13,9 @@ export type MediaCardProps = {
   sinopsis: string;
   tags: string[];
 };
+
+export type PaginationProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};

@@ -1,11 +1,20 @@
 import { useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { videogames } from "../../data/videogames";
+import { usePagination } from "../../hooks/PaginationHook";
+import Pagination from "../../components/Pagination";
 
 function VideoGamesManagement() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const categoryOptions = ["RPG", "Acción", "Aventura", "Shooter", "Rol"];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedVideogames,
+    setCurrentPage,
+  } = usePagination(videogames, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -115,7 +124,7 @@ function VideoGamesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {videogames.map((v) => (
+                {paginatedVideogames.map((v) => (
                   <tr
                     key={v.id}
                     className="border-b border-white/10 hover:bg-white/5"
@@ -131,9 +140,7 @@ function VideoGamesManagement() {
                     <td className="px-6 py-4 font-medium text-white">
                       {v.nombre}
                     </td>
-                    <td className="px-6 py-4 max-w-xs truncate">
-                      {v.sinopsis}
-                    </td>
+                    <td className="px-6 py-4 max-w-xs ">{v.sinopsis}</td>
 
                     <td className="px-6 py-4 text-center">{v.peso}</td>
                     <td className="px-6 py-4">
@@ -196,6 +203,11 @@ function VideoGamesManagement() {
           </div>
         </section>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </main>
   );
 }
