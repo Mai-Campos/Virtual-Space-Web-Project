@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { series } from "../../data/series";
+import { series as seriesMock } from "../../mocks/series";
 import Card from "../../components/Card";
 import Pagination from "../../components/Pagination";
-import { usePagination } from "../../hooks/PaginationHook";
+import { mockPaginate } from "../../mocks/mockPaginate";
+import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function SeriesCatalog() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
+  const fetchSeries = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(seriesMock, page, limit));
+  }, []);
+
   const {
+    data: series,
     currentPage,
     totalPages,
-    paginatedItems: paginatedSeries,
     setCurrentPage,
-  } = usePagination(series, 6);
+    loading,
+  } = usePaginatedData(fetchSeries, 6);
 
   return (
     <main>
@@ -37,8 +43,10 @@ function SeriesCatalog() {
         />
       </div>
 
+      {loading && <p className="text-white/60">Cargando...</p>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {paginatedSeries.map((s) => (
+        {series.map((s) => (
           <Card
             id={s.id}
             key={s.id}

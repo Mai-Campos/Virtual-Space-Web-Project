@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { movies } from "../../data/movies";
+import { movies as moviesMock } from "../../mocks/movies";
 import Pagination from "../../components/Pagination";
-import { usePagination } from "../../hooks/PaginationHook";
+import { mockPaginate } from "../../mocks/mockPaginate";
+import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function MoviesManagement() {
   const [selectedGenres, setselectedGenres] = useState<string[]>([]);
 
   const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
+  const fetchMovies = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(moviesMock, page, limit));
+  }, []);
+
   const {
+    data: movies,
     currentPage,
     totalPages,
-    paginatedItems: paginatedMovies,
     setCurrentPage,
-  } = usePagination(movies, 5);
+    loading,
+  } = usePaginatedData(fetchMovies, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -124,6 +130,8 @@ function MoviesManagement() {
           </div>
         </section>
 
+        {loading && <p className="text-white/60">Cargando...</p>}
+
         {/* LISTADO */}
         <section>
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
@@ -144,7 +152,7 @@ function MoviesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedMovies.map((m) => (
+                {movies.map((m) => (
                   <tr
                     key={m.id}
                     className="border-b border-white/10 hover:bg-white/5"

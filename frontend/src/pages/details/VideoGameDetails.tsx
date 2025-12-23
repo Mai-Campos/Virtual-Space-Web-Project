@@ -1,4 +1,4 @@
-import { videogames } from "../../data/videogames";
+import { videogames } from "../../mocks/videogames";
 import { useParams } from "react-router-dom";
 
 function VideoGameDetails() {

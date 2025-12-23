@@ -1,10 +1,12 @@
 import type { PaginationProps } from "../types/Types";
 
+// Componente de paginación que recibe una pagina actual, un total de paginas y una función para cambiar de página y devuelve las mismas
 export default function Pagination({
   currentPage,
   totalPages,
   onPageChange,
 }: PaginationProps) {
+  // Si no hay páginas (No hay componentes) retorna null
   if (totalPages <= 1) return null;
 
   return (
@@ -17,6 +19,7 @@ export default function Pagination({
         ←
       </button>
 
+      {/* Números de páginas en el componente de paginación que permite desplazarse */}
       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
         <button
           key={page}

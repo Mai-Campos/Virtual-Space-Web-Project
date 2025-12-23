@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { employees } from "../../data/employees";
+import { employees } from "../../mocks/employees";
 
 function EmployeesManagement() {
   const [showPassword, setShowPassword] = useState(false);

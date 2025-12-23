@@ -1,4 +1,4 @@
-import { series } from "../../data/series";
+import { series } from "../../mocks/series";
 import { useParams } from "react-router-dom";
 
 function SerialDetails() {

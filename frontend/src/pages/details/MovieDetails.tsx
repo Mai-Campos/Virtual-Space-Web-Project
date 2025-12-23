@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { movies } from "../../data/movies";
+import { movies } from "../../mocks/movies";
 
 function MovieDetails() {
   const params = useParams();

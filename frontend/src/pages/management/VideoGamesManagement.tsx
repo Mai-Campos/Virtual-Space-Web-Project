@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { videogames } from "../../data/videogames";
-import { usePagination } from "../../hooks/PaginationHook";
+import { videogames as videogamesMock } from "../../mocks/videogames";
 import Pagination from "../../components/Pagination";
+import { mockPaginate } from "../../mocks/mockPaginate";
+import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function VideoGamesManagement() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const categoryOptions = ["RPG", "Acción", "Aventura", "Shooter", "Rol"];
 
+  const fetchVideogames = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(videogamesMock, page, limit));
+  }, []);
+
   const {
+    data: videogames,
     currentPage,
     totalPages,
-    paginatedItems: paginatedVideogames,
     setCurrentPage,
-  } = usePagination(videogames, 5);
+    loading,
+  } = usePaginatedData(fetchVideogames, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -105,6 +111,8 @@ function VideoGamesManagement() {
           </div>
         </section>
 
+        {loading && <p className="text-white/60">Cargando...</p>}
+
         {/* LISTADO */}
         <section>
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
@@ -124,7 +132,7 @@ function VideoGamesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedVideogames.map((v) => (
+                {videogames.map((v) => (
                   <tr
                     key={v.id}
                     className="border-b border-white/10 hover:bg-white/5"

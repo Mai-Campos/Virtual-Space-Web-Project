@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { videogames } from "../../data/videogames";
+import { videogames as videogamesMock } from "../../mocks/videogames";
 import Card from "../../components/Card";
-import { usePagination } from "../../hooks/PaginationHook";
 import Pagination from "../../components/Pagination";
+import { mockPaginate } from "../../mocks/mockPaginate";
+import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function VideoGamesCatalog() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const categoryOptions = ["RPG", "Acción", "Aventura", "Rol", "Shooter"];
 
+  const fetchVideogames = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(videogamesMock, page, limit));
+  }, []);
+
   const {
+    data: videogames,
     currentPage,
     totalPages,
-    paginatedItems: paginatedVideogames,
     setCurrentPage,
-  } = usePagination(videogames, 6);
+    loading,
+  } = usePaginatedData(fetchVideogames, 6);
 
   return (
     <main>
@@ -37,8 +43,10 @@ function VideoGamesCatalog() {
         />
       </div>
 
+      {loading && <p className="text-white/60">Cargando...</p>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {paginatedVideogames.map((v) => (
+        {videogames.map((v) => (
           <Card
             id={v.id}
             key={v.id}

@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { series } from "../../data/series";
-import { usePagination } from "../../hooks/PaginationHook";
+import { series as seriesMock } from "../../mocks/series";
 import Pagination from "../../components/Pagination";
+import { mockPaginate } from "../../mocks/mockPaginate";
+import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function SeriesManagement() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
+  const fetchSeries = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(seriesMock, page, limit));
+  }, []);
+
   const {
+    data: series,
     currentPage,
     totalPages,
-    paginatedItems: paginatedSeries,
     setCurrentPage,
-  } = usePagination(series, 5);
+    loading,
+  } = usePaginatedData(fetchSeries, 5);
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -135,6 +141,8 @@ function SeriesManagement() {
           </div>
         </section>
 
+        {loading && <p className="text-white/60">Cargando...</p>}
+
         {/* LISTADO */}
         <section>
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
@@ -156,7 +164,7 @@ function SeriesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedSeries.map((s) => (
+                {series.map((s) => (
                   <tr
                     key={s.id}
                     className="border-b border-white/10 hover:bg-white/5"

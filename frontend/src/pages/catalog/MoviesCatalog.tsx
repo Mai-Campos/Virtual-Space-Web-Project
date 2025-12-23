@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { movies } from "../../data/movies.js";
+import { movies as moviesMock } from "../../mocks/movies.js";
 import Card from "../../components/Card.js";
 import Pagination from "../../components/Pagination.js";
-import { usePagination } from "../../hooks/PaginationHook.js";
+import { usePaginatedData } from "../../hooks/PaginationHook.js";
+import { mockPaginate } from "../../mocks/mockPaginate.js";
 
 function MoviesCatalog() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
+  const fetchMovies = useCallback(async (page: number, limit: number) => {
+    return Promise.resolve(mockPaginate(moviesMock, page, limit));
+  }, []);
+
   const {
+    data: movies,
     currentPage,
     totalPages,
-    paginatedItems: paginatedMovies,
     setCurrentPage,
-  } = usePagination(movies, 6);
+    loading,
+  } = usePaginatedData(fetchMovies, 6);
 
   return (
     <main>
@@ -37,8 +43,10 @@ function MoviesCatalog() {
         />
       </div>
 
+      {loading && <p className="text-white/60">Cargando...</p>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {paginatedMovies.map((p) => (
+        {movies.map((p) => (
           <Card
             id={p.id}
             type="movie"

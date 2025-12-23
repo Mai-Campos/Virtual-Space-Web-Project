@@ -19,3 +19,9 @@ export type PaginationProps = {
   totalPages: number;
   onPageChange: (page: number) => void;
 };
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  currentPage: number;
+  totalPages: number;
+};
