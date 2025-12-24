@@ -1,19 +1,39 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { series as seriesMock } from "../../mocks/series";
 import Card from "../../components/Card";
 import Pagination from "../../components/Pagination";
-import { mockPaginate } from "../../mocks/mockPaginate";
 import { usePaginatedData } from "../../hooks/PaginationHook";
+import { mockPaginateFiltered } from "../../mocks/mockPaginateFiltered";
 
 function SeriesCatalog() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
 
-  const fetchSeries = useCallback(async (page: number, limit: number) => {
-    return Promise.resolve(mockPaginate(seriesMock, page, limit));
-  }, []);
+  const seriesForCatalog = useMemo(
+    () =>
+      seriesMock.map((s) => ({
+        ...s,
+        tags: s.generos,
+      })),
+    []
+  );
+  const [search, setSearch] = useState("");
+
+  const fetchSeries = useCallback(
+    async (page: number, limit: number) => {
+      return Promise.resolve(
+        mockPaginateFiltered(seriesForCatalog, {
+          page,
+          limit,
+          search,
+          tags: selectedGenres,
+        })
+      );
+    },
+    [search, selectedGenres, seriesForCatalog]
+  );
 
   const {
     data: series,
@@ -23,6 +43,10 @@ function SeriesCatalog() {
     loading,
   } = usePaginatedData(fetchSeries, 6);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedGenres, setCurrentPage]);
+
   return (
     <main>
       <div className="flex flex-col sm:flex-row gap-4 px-4 py-3">
@@ -30,6 +54,9 @@ function SeriesCatalog() {
           <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
             <input
               className="form-input flex min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:border-none h-full placeholder:text-white/50 px-4 pl-2 text-base font-normal leading-normal"
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
               placeholder="Buscar por título"
             />
           </div>

@@ -25,3 +25,15 @@ export type PaginatedResponse<T> = {
   currentPage: number;
   totalPages: number;
 };
+
+export type PaginationFilterParams = {
+  page: number;
+  limit: number;
+  search: string | null;
+  tags: string[] | null;
+};
+
+export type FilterableContent = {
+  nombre: string;
+  tags: string[];
+};

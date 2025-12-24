@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { videogames as videogamesMock } from "../../mocks/videogames";
 import Pagination from "../../components/Pagination";
-import { mockPaginate } from "../../mocks/mockPaginate";
 import { usePaginatedData } from "../../hooks/PaginationHook";
+import { mockPaginate } from "../../mocks/mockPaginate";
 
 function VideoGamesManagement() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);

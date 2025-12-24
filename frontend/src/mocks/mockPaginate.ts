@@ -1,6 +1,5 @@
 import type { PaginatedResponse } from "../types/Types";
 
-// Función para paginar elementos mocks
 export function mockPaginate<T>(
   items: T[],
   page: number,

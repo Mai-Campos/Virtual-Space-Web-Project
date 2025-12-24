@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { series as seriesMock } from "../../mocks/series";
 import Pagination from "../../components/Pagination";
-import { mockPaginate } from "../../mocks/mockPaginate";
 import { usePaginatedData } from "../../hooks/PaginationHook";
+import { mockPaginate } from "../../mocks/mockPaginate";
 
 function SeriesManagement() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);

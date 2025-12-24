@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import { videogames as videogamesMock } from "../../mocks/videogames";
 import Card from "../../components/Card";
 import Pagination from "../../components/Pagination";
-import { mockPaginate } from "../../mocks/mockPaginate";
+import { mockPaginateFiltered } from "../../mocks/mockPaginateFiltered";
 import { usePaginatedData } from "../../hooks/PaginationHook";
 
 function VideoGamesCatalog() {
@@ -11,9 +11,30 @@ function VideoGamesCatalog() {
 
   const categoryOptions = ["RPG", "Acción", "Aventura", "Rol", "Shooter"];
 
-  const fetchVideogames = useCallback(async (page: number, limit: number) => {
-    return Promise.resolve(mockPaginate(videogamesMock, page, limit));
-  }, []);
+  const [search, setSearch] = useState("");
+
+  const videogamesForCatalog = useMemo(
+    () =>
+      videogamesMock.map((v) => ({
+        ...v,
+        tags: v.categorias,
+      })),
+    []
+  );
+
+  const fetchVideogames = useCallback(
+    async (page: number, limit: number) => {
+      return Promise.resolve(
+        mockPaginateFiltered(videogamesForCatalog, {
+          page,
+          limit,
+          search,
+          tags: selectedCategories,
+        })
+      );
+    },
+    [search, selectedCategories, videogamesForCatalog]
+  );
 
   const {
     data: videogames,
@@ -23,6 +44,10 @@ function VideoGamesCatalog() {
     loading,
   } = usePaginatedData(fetchVideogames, 6);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedCategories, setCurrentPage]);
+
   return (
     <main>
       <div className="flex flex-col sm:flex-row gap-4 px-4 py-3">
@@ -31,6 +56,9 @@ function VideoGamesCatalog() {
             <input
               className="form-input flex min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-white/5 focus:border-none h-full placeholder:text-white/50 px-4 pl-2 text-base font-normal leading-normal"
               placeholder="Buscar por título"
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
             />
           </div>
         </label>
