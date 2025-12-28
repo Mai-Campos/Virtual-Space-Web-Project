@@ -16,7 +16,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {}
 
   async onModuleInit() {
-    const pool = new Pool({
+    this.pool = new Pool({
       host: this.config.get<string>('DB_HOST'),
       port: this.config.get<number>('DB_PORT'),
       user: this.config.get<string>('DB_USER'),
@@ -24,7 +24,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       database: this.config.get<string>('DB_NAME'),
     });
 
-    await pool.query('SELECT 1');
+    await this.pool.query('SELECT 1');
     this.logger.log('PostgreSQL connected');
   }
 
@@ -34,6 +34,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   ): Promise<QueryResult<T>> {
     if (!this.pool)
       throw new InternalServerErrorException('Database pool not initialized');
+
     return this.pool.query<T>(sql, params);
   }
 

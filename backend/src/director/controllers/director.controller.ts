@@ -6,40 +6,41 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { CreateDirectorDto } from '../dtos/create-director.dto';
 import { UpdateDirectorDto } from '../dtos/update-director.dto';
 import { DirectorService } from '../services/director.service';
+import { Director } from '../models/director.model';
 
-@Controller('director')
+@Controller('directors')
 export class DirectorController {
   constructor(private readonly directorService: DirectorService) {}
 
   @Post()
-  create(@Body() createDirectorDto: CreateDirectorDto) {
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createDirectorDto: CreateDirectorDto): Promise<Director> {
     return this.directorService.create(createDirectorDto);
   }
 
   @Get()
-  findAll() {
-    return this.directorService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.directorService.findOne(+id);
+  async findAll(): Promise<Director[]> {
+    return await this.directorService.findAll();
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateDirectorDto: UpdateDirectorDto,
-  ) {
-    return this.directorService.update(+id, updateDirectorDto);
+  ): Promise<Director> {
+    return this.directorService.update(updateDirectorDto, id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.directorService.remove(+id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.directorService.delete(id);
   }
 }
