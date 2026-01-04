@@ -1,26 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateGenreDto } from '../dtos/create-genre.dto';
 import { UpdateGenreDto } from '../dtos/update-genre.dto';
+import { GenreRepository } from '../repositories/genre.repository';
+import { Genre } from '../models/genre.entity';
 
 @Injectable()
 export class GenreService {
-  create(createGenreDto: CreateGenreDto) {
-    return 'This action adds a new genre';
+  constructor(private readonly repo: GenreRepository) {}
+
+  async create(createGenreDto: CreateGenreDto): Promise<Genre> {
+    return await this.repo.create(createGenreDto);
   }
 
-  findAll() {
-    return `This action returns all genre`;
+  async findAll(): Promise<Genre[]> {
+    return await this.repo.getAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} genre`;
+  async update(updateGenreDto: UpdateGenreDto, id: number): Promise<Genre> {
+    const updated = await this.repo.update(updateGenreDto, id);
+
+    if (!updated) throw new NotFoundException(`Genre with id: ${id} not found`);
+
+    return updated;
   }
 
-  update(id: number, updateGenreDto: UpdateGenreDto) {
-    return `This action updates a #${id} genre`;
-  }
+  async delete(id: number) {
+    try {
+      const deleted = await this.repo.delete(id);
+      if (!deleted)
+        throw new NotFoundException(`Director with id: ${id} not found`);
+    } catch (error) {
+      const pgError = error as { code?: string };
+      if (pgError.code === '23503') {
+        throw new ConflictException(
+          `Cannot delete director with id: ${id} because it is referenced by other records`,
+        );
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} genre`;
+      throw error;
+    }
   }
 }

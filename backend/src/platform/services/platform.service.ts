@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePlatformDto } from '../dtos/create-platform.dto';
 import { UpdatePlatformDto } from '../dtos/update-platform.dto';
+import { PlatformRepository } from '../repositories/platform.respository';
+import { Platform } from '../models/platform.entity';
 
 @Injectable()
 export class PlatformService {
-  create(createPlatformDto: CreatePlatformDto) {
-    return 'This action adds a new platform';
+  constructor(private readonly repo: PlatformRepository) {}
+
+  async create(createPlatformDto: CreatePlatformDto): Promise<Platform> {
+    return await this.repo.create(createPlatformDto);
   }
 
-  findAll() {
-    return `This action returns all platform`;
+  async findAll(): Promise<Platform[]> {
+    return await this.repo.getAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} platform`;
+  async update(
+    updatePlatformDto: UpdatePlatformDto,
+    id: number,
+  ): Promise<Platform> {
+    const updated = await this.repo.update(updatePlatformDto, id);
+
+    if (!updated)
+      throw new NotFoundException(`Platform with id: ${id} not found`);
+
+    return updated;
   }
 
-  update(id: number, updatePlatformDto: UpdatePlatformDto) {
-    return `This action updates a #${id} platform`;
-  }
+  async delete(id: number): Promise<void> {
+    try {
+      const deleted = await this.repo.delete(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} platform`;
+      if (!deleted)
+        throw new NotFoundException(`Platform with id: ${id} not found`);
+    } catch (error) {
+      const pgError = error as { code?: string };
+      if (pgError.code === '23503') {
+        throw new ConflictException(
+          `Cannot delete Platform with id: ${id} because it is referenced by other records`,
+        );
+      }
+
+      throw error;
+    }
   }
 }
