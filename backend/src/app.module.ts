@@ -6,6 +6,9 @@ import { AuthModule } from './auth/modules/auth.module';
 import { DatabaseModule } from './database/modules/database.module';
 import { DirectorModule } from './director/modules/director.module';
 import { ConfigModule } from '@nestjs/config';
+import { MovieModule } from './content/movie/modules/movie.module';
+import { SerieModule } from './content/serie/modules/serie.module';
+import { VideogameModule } from './content/videogame/modules/videogame.module';
 
 @Module({
   imports: [
@@ -15,6 +18,9 @@ import { ConfigModule } from '@nestjs/config';
     PlatformModule,
     AuthModule,
     DatabaseModule,
+    MovieModule,
+    SerieModule,
+    VideogameModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
