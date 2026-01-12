@@ -9,12 +9,19 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePlatformDto } from '../dtos/create-platform.dto';
 import { UpdatePlatformDto } from '../dtos/update-platform.dto';
 import { PlatformService } from '../services/platform.service';
 import { Platform } from '../models/platform.entity';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/role/enums/role.enum';
 
+@UseGuards(AuthenticationGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.EMPLOYEE)
 @Controller('platforms')
 export class PlatformController {
   constructor(private readonly platformService: PlatformService) {}

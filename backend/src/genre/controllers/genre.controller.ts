@@ -9,12 +9,19 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateGenreDto } from '../dtos/create-genre.dto';
 import { UpdateGenreDto } from '../dtos/update-genre.dto';
 import { GenreService } from '../services/genre.service';
 import { Genre } from '../models/genre.entity';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/role/enums/role.enum';
 
+@UseGuards(AuthenticationGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.EMPLOYEE)
 @Controller('genres')
 export class GenreController {
   constructor(private readonly genreService: GenreService) {}

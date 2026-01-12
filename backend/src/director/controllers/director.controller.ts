@@ -9,12 +9,19 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateDirectorDto } from '../dtos/create-director.dto';
 import { UpdateDirectorDto } from '../dtos/update-director.dto';
 import { DirectorService } from '../services/director.service';
 import { Director } from '../models/director.model';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/role/enums/role.enum';
 
+@UseGuards(AuthenticationGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.EMPLOYEE)
 @Controller('directors')
 export class DirectorController {
   constructor(private readonly directorService: DirectorService) {}

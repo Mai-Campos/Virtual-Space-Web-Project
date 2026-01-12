@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MovieModule } from './content/movie/modules/movie.module';
 import { SerieModule } from './content/serie/modules/serie.module';
 import { VideogameModule } from './content/videogame/modules/videogame.module';
+import { UserModule } from './user/modules/user.module';
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { VideogameModule } from './content/videogame/modules/videogame.module';
       isGlobal: true,
       cache: true,
     }),
+    UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
