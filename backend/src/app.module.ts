@@ -10,6 +10,7 @@ import { MovieModule } from './content/movie/modules/movie.module';
 import { SerieModule } from './content/serie/modules/serie.module';
 import { VideogameModule } from './content/videogame/modules/videogame.module';
 import { UserModule } from './user/modules/user.module';
+import { UploadModule } from './cloudinary/modules/upload.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { UserModule } from './user/modules/user.module';
     }),
     UserModule,
     AuthModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [],
