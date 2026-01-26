@@ -69,7 +69,7 @@ export class SerieService {
 
     if (updated === 0) throw new BadRequestException('Nothing was updated');
 
-    if (dto.platformId !== undefined) {
+    if (typeof dto.platformId === 'number' && !Number.isNaN(dto.platformId)) {
       await this.repo.updatePlatform(id, dto.platformId);
     }
 

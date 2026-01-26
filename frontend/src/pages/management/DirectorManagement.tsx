@@ -1,25 +1,197 @@
+import { useEffect, useState } from "react";
+import type { Options } from "../../types/MultiSelectTypes";
+import { toast, ToastContainer } from "react-toastify";
+
 function DirectorManagement() {
-  const directors = [
-    {
-      id: 1,
-      name: "Cristopher Nolan",
-    },
-    {
-      id: 2,
-      name: "Robert de Niro",
-    },
-    {
-      id: 3,
-      name: "Steven Spielberg",
-    },
-  ];
+  // Token
+  const token = localStorage.getItem("accesToken");
+
+  // Nombre de la categoría
+  const [directorName, setDirectorName] = useState("");
+
+  // Géneros traidos del backend
+  const [directors, setDirectors] = useState<Options[]>([]);
+
+  // Saber si se está editando
+  const [editingDirectorId, setEditingDirectorId] = useState<number | null>(
+    null,
+  );
+
+  // Para refrescar la tabla
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Función que refresa la tabla
+  const refreshTable = () => {
+    setRefreshKey((k) => k + 1);
+  };
+
+  // Función que valida el formulario
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!directorName || directorName.trim().length < 4) {
+      errors.push("El nombre debe tener al menos 4 caracteres");
+    }
+
+    return errors;
+  };
+
+  // Función que resetea el formulario
+  const resetForm = () => {
+    setEditingDirectorId(null);
+    setDirectorName("");
+  };
+
+  // Traer directores
+  useEffect(() => {
+    const fetchDirectors = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/v1/directors`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Error cargando directores");
+        }
+
+        const directorsData = await res.json();
+        setDirectors(directorsData);
+      } catch (error) {
+        console.error("Error cargando directores:", error);
+        toast.error("Error cargando directores");
+      }
+    };
+
+    fetchDirectors();
+  }, [token, refreshKey]);
+
+  // Manejador para enviar formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors = validateForm();
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.error(err));
+      return;
+    }
+
+    const payload = {
+      name: directorName,
+    };
+
+    const url = editingDirectorId
+      ? `http://localhost:3000/api/v1/directors/${editingDirectorId}`
+      : `http://localhost:3000/api/v1/directors`;
+
+    const method = editingDirectorId ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      toast("Error gaurdando director");
+      throw new Error("Error guardando director");
+    }
+
+    toast.success("Director guardado correctamente");
+
+    resetForm();
+    refreshTable();
+  };
+
+  // Manejador para eliminar
+  const handleDelete = async (id: number) => {
+    const confirmDelete = confirm("¿Seguro que deseas eliminar este director?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/v1/directors/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorBody = await res.json();
+
+        const message = Array.isArray(errorBody.message)
+          ? errorBody.message.join(", ")
+          : errorBody.message || "Error al eliminar director";
+
+        if (errorBody.statusCode === 409) {
+          throw new Error(
+            "No se puede eliminar el director porque está asociado a una o más películas.",
+          );
+        }
+
+        throw new Error(message);
+      }
+
+      toast.success("Director eliminado correctamente");
+      refreshTable();
+    } catch (error) {
+      console.log(error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  // Manejador para editar
+  const handleEdit = (director: Options) => {
+    setEditingDirectorId(director.id);
+
+    setDirectorName(director.name);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <div className="col-span-1 bg-white/5 rounded-lg p-6">
         <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-6">
-          Añadir Nuevo Director
+          {editingDirectorId ? "Editar Director" : "Añadir Nuevo Director"}{" "}
         </h2>
+
+        {/* BANNER DE EDICIÓN (solo cuando está editando) */}
+        {editingDirectorId && (
+          <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 512 512"
+                  fill="#60a5fa"
+                >
+                  <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-blue-300">Modo edición activo</p>
+                <p className="text-sm text-blue-400/80">
+                  Editando director #{editingDirectorId}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-400/20"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+
         <form className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <label
@@ -32,11 +204,14 @@ function DirectorManagement() {
               className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-md text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/10 bg-black/20 h-12 placeholder:text-white/40 px-4 text-sm font-normal leading-normal"
               id="director-name"
               placeholder="Ej: Cristopher Nolan"
+              value={directorName}
+              onChange={(e) => setDirectorName(e.target.value)}
             />
           </div>
           <button
             className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 focus:ring-2 focus:ring-primary  "
             type="submit"
+            onClick={handleSubmit}
           >
             Guardar Director
           </button>
@@ -46,6 +221,7 @@ function DirectorManagement() {
         <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-6">
           Directores Existentes
         </h2>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="border-b border-white/20">
@@ -76,7 +252,7 @@ function DirectorManagement() {
                       <button
                         title="Editar"
                         className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                        onClick={() => console.log("Editar", director.id)}
+                        onClick={() => handleEdit(director)}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +271,7 @@ function DirectorManagement() {
                       <button
                         title="Eliminar"
                         className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                        onClick={() => console.log("Eliminar", director.id)}
+                        onClick={() => handleDelete(director.id)}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -117,6 +293,7 @@ function DirectorManagement() {
           </table>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

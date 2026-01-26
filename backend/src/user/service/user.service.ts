@@ -59,10 +59,7 @@ export class UserService {
 
     const hasUserData = dto.name !== undefined || dto.email !== undefined;
 
-    const hasRoles = dto.roleNames && dto.roleNames.length > 0;
-
-    if (!hasUserData && !hasRoles)
-      throw new BadRequestException(`Nothing was updated`);
+    if (!hasUserData) throw new BadRequestException(`Nothing was updated`);
   }
 
   async delete(id: number): Promise<void> {

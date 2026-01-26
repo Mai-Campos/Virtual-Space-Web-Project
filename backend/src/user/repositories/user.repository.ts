@@ -91,19 +91,6 @@ export class UserRepository {
 
     if ((result.rowCount ?? 0) === 0) return false;
 
-    if (dto.roleNames) {
-      await this.databaseService.query(
-        'DELETE FROM user_roles WHERE user_id = $1',
-        [id],
-      );
-
-      for (const roleName of dto.roleNames) {
-        await this.databaseService.query(
-          'INSERT INTO user_roles (user_id, role_id) SELECT $1, id FROM roles WHERE name = $2',
-          [id, roleName],
-        );
-      }
-    }
     return true;
   }
 

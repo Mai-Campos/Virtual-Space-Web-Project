@@ -1,9 +1,59 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import type { BackendError } from "../types/Types";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = () => setShowPassword((prev) => !prev);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data: BackendError & {
+        accesToken?: string;
+        user?: { id: number; email: string; roles: string[] };
+      } = await res.json();
+
+      if (!res.ok) {
+        if (data.errors) {
+          setErrors(data.errors);
+        } else if (data.message) {
+          setErrors({ general: data.message });
+        } else {
+          setErrors({ general: "Error desconocido" });
+        }
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("accesToken", data.accesToken!);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/home");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrors({ general: error.message });
+      } else {
+        setErrors({ general: "Error desconocido" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden p-4 sm:p-6 md:p-8">
@@ -29,11 +79,16 @@ function Login() {
               Email
             </label>
             <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="form-input w-full rounded-lg border border-white/10 bg-white/5 p-3 text-white placeholder:text-zinc-500 focus:border-primary focus:ring-primary"
               id="email"
               placeholder="tu@email.com"
               type="email"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
           {/* CONTRASEÑA */}
@@ -47,6 +102,8 @@ function Login() {
 
             <div className="relative">
               <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="form-input w-full rounded-lg border border-white/10 bg-white/5 p-3 pr-12 text-white placeholder:text-zinc-500 focus:border-primary focus:ring-primary"
                 id="password"
                 placeholder="••••••••"
@@ -88,14 +145,22 @@ function Login() {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
           </div>
         </div>
 
         {/* BOTÓN SUBMIT */}
-        <button className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white transition-colors hover:bg-primary/90">
-          Iniciar Sesión
+        <button
+          className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white transition-colors hover:bg-primary/90"
+          onClick={handleLogin}
+        >
+          {loading ? "Iniciando..." : "Iniciar Sesión"}
         </button>
-
+        {errors.general && (
+          <p className="text-red-500 text-sm mt-2">{errors.general}</p>
+        )}
         {/* FOOTER */}
         <p className="text-center text-sm text-zinc-400">
           ¿No tienes una cuenta?{" "}

@@ -69,7 +69,7 @@ export class MovieService {
 
     if (updated === 0) throw new BadRequestException('Nothing was updated');
 
-    if (dto.directorId !== undefined) {
+    if (typeof dto.directorId === 'number' && !Number.isNaN(dto.directorId)) {
       await this.repo.updateDirector(id, dto.directorId);
     }
 

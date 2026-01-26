@@ -1,10 +1,4 @@
-import {
-  IsArray,
-  IsEmail,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateEmployeeDto {
   @IsOptional()
@@ -15,9 +9,4 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsEmail()
   email?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  roleNames?: string[];
 }

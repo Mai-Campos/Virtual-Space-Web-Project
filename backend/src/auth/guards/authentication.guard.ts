@@ -26,8 +26,6 @@ export class AuthenticationGuard implements CanActivate {
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
-
-      return false;
     }
   }
 

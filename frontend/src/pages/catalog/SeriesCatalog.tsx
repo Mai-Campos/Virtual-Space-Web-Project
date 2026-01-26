@@ -1,38 +1,74 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { series as seriesMock } from "../../mocks/series";
+
 import Card from "../../components/Card";
 import Pagination from "../../components/Pagination";
 import { usePaginatedData } from "../../hooks/PaginationHook";
-import { mockPaginateFiltered } from "../../mocks/mockPaginateFiltered";
+import type { VisualContent } from "../../types/Types";
+import type { Options } from "../../types/MultiSelectTypes";
+import { toast } from "react-toastify";
 
 function SeriesCatalog() {
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-
-  const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
-
-  const seriesForCatalog = useMemo(
-    () =>
-      seriesMock.map((s) => ({
-        ...s,
-        tags: s.generos,
-      })),
-    []
-  );
   const [search, setSearch] = useState("");
+
+  const token = localStorage.getItem("accesToken");
+
+  const [genres, setGenres] = useState<Options[]>([]);
+
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/genres", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando géneros");
+        throw new Error("Error cargando géneros");
+      }
+
+      const genres = await res.json();
+      setGenres(genres);
+    };
+
+    fetchGenres();
+  }, [token]);
 
   const fetchSeries = useCallback(
     async (page: number, limit: number) => {
-      return Promise.resolve(
-        mockPaginateFiltered(seriesForCatalog, {
-          page,
-          limit,
-          search,
-          tags: selectedGenres,
-        })
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      if (search) {
+        params.append("search", search);
+      }
+
+      if (selectedGenres.length > 0) {
+        params.append("genres", selectedGenres.join(","));
+      }
+
+      const res = await fetch(
+        `http://localhost:3000/api/v1/series/catalog?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
+
+      if (!res.ok) {
+        toast.error("Error cargando series");
+        throw new Error("Error cargando series");
+      }
+
+      return res.json();
     },
-    [search, selectedGenres, seriesForCatalog]
+    [search, selectedGenres, token],
   );
 
   const {
@@ -41,7 +77,7 @@ function SeriesCatalog() {
     totalPages,
     setCurrentPage,
     loading,
-  } = usePaginatedData(fetchSeries, 6);
+  } = usePaginatedData<VisualContent>(fetchSeries, 6);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -63,7 +99,7 @@ function SeriesCatalog() {
         </label>
 
         <MultiSelect
-          options={genreOptions}
+          options={genres}
           label="Géneros"
           selected={selectedGenres}
           setSelected={setSelectedGenres}
@@ -78,10 +114,10 @@ function SeriesCatalog() {
             id={s.id}
             key={s.id}
             type="series"
-            title={s.nombre}
-            imageUrl={s.imageUrl}
-            sinopsis={s.sinopsis}
-            tags={s.generos}
+            title={s.title}
+            coverImg={s.coverImg}
+            synopsis={s.synopsis}
+            tags={s.genres}
           />
         ))}
       </div>

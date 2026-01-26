@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
@@ -12,6 +12,7 @@ import CatalogLayout from "./pages/catalog/CatalogLayout";
 import EmployeesManagement from "./pages/management/EmployeesManagement";
 import PageNotFound from "./pages/PageNotFound";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import { ProtectedRoute } from "./components/ProtectedRoutes";
 
 function App() {
   return (
@@ -19,19 +20,30 @@ function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/catalog" element={<CatalogLayout />} />
-        <Route path="/movie/details/:id" element={<MovieDetails />} />
-        <Route path="/series/details/:id" element={<SerialDetails />} />
-        <Route path="/videogame/details/:id" element={<GameDetails />} />
-
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/management" element={<ManagementLayout />} />
-        <Route path="/employees-management" element={<EmployeesManagement />} />
-        <Route path="/404" element={<PageNotFound />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="*" element={<PageNotFound />} />
         <Route path="/403" element={<UnauthorizedPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/catalog" element={<CatalogLayout />} />
+          <Route path="/movie/details/:id" element={<MovieDetails />} />
+          <Route path="/series/details/:id" element={<SerialDetails />} />
+          <Route path="/videogame/details/:id" element={<GameDetails />} />
+        </Route>
+
+        <Route
+          element={<ProtectedRoute allowedRoles={["admin", "employee"]} />}
+        >
+          <Route path="/management" element={<ManagementLayout />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route
+            path="/employees-management"
+            element={<EmployeesManagement />}
+          />
+        </Route>
       </Routes>
 
       <Footer />

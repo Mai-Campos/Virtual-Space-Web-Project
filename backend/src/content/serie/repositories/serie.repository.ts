@@ -48,8 +48,18 @@ export class SerieRepository {
     SELECT
   c.id,
   c.title,
+  c.synopsis,
   c.cover_img AS "coverImg",
-  ARRAY_AGG(DISTINCT g.name) AS genres
+  
+   JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
+
+  ARRAY_AGG(DISTINCT g.id) AS "genreIds"
+  
 FROM contents c
 JOIN series s ON s.content_id = c.id
 JOIN serie_genres sg ON sg.serie_id = c.id
@@ -94,18 +104,18 @@ LIMIT $4 OFFSET $5
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
       s.seasons,
+      p.name as platform,
 
-      json_build_object(
-        'id', p.id,
-        'name', p.name
-      ) AS platform,
+      
 
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', g.id,
-          'name', g.name
-        )
-      ) AS genres
+       JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
+
+   ARRAY_AGG(DISTINCT g.id) AS "genreIds"
 
     FROM contents c
     JOIN series s ON s.content_id = c.id
@@ -115,7 +125,7 @@ LIMIT $4 OFFSET $5
 
     WHERE c.content_type = 'serie'
 
-    GROUP BY c.id, p.id, s.seasons
+    GROUP BY c.id, p.name, s.seasons
     ORDER BY c.id DESC
     LIMIT $1 OFFSET $2
     `,
@@ -169,18 +179,16 @@ LIMIT $4 OFFSET $5
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
       s.seasons,
+      p.name as platform,
 
-      json_build_object(
-        'id', p.id,
-        'name', p.name
-      ) AS platform,
+       JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
 
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', g.id,
-          'name', g.name
-        )
-      ) AS genres
+   ARRAY_AGG(DISTINCT g.id) AS "genreIds"
 
     FROM contents c
     JOIN series s ON s.content_id = c.id
@@ -191,7 +199,7 @@ LIMIT $4 OFFSET $5
     WHERE c.id = $1
       AND c.content_type = $2
 
-    GROUP BY c.id, p.id, s.seasons
+    GROUP BY c.id, p.name, s.seasons
     `,
       [id, ContentType.SERIE],
     );

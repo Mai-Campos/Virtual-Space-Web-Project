@@ -1,12 +1,37 @@
 import { useParams } from "react-router-dom";
-import { movies } from "../../mocks/movies";
+import type { CompleteMovie } from "../../types/Types";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 function MovieDetails() {
   const params = useParams();
 
   const id = parseInt(params.id || "0", 10);
 
-  const movie = movies.find((m) => m.id === id);
+  const token = localStorage.getItem("accesToken");
+
+  const [movieDetail, setMovieDetail] = useState<CompleteMovie | null>(null);
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      const res = await fetch(`http://localhost:3000/api/v1/movies/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando película");
+        throw new Error("Error cargando película");
+      }
+
+      const movie = await res.json();
+
+      setMovieDetail(movie);
+    };
+
+    fetchMovie();
+  }, [token, id]);
 
   return (
     <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-8 py-8 lg:py-12">
@@ -15,17 +40,17 @@ function MovieDetails() {
           <img
             className="aspect-2/3 w-full max-w-sm mx-auto md:max-w-none bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-white/10 rounded-lg"
             data-alt="Póster de la película"
-            src={movie?.imageUrl}
+            src={movieDetail?.coverImg}
           />
         </div>
         <div className="flex flex-col space-y-6">
           <div className="pb-2">
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-tighter">
-              {movie?.nombre}
+              {movieDetail?.title}
             </h1>
             <p className="text-white/70 text-base font-normal leading-normal pt-2">
               <span className="text-primary">Dirigida por:</span>{" "}
-              {movie?.Director}
+              {movieDetail?.director}
             </p>
           </div>
           <div>
@@ -34,7 +59,7 @@ function MovieDetails() {
             </h2>
             <div className="border-0 rounded-2xl bg-gray-400/10 p-4 ">
               <p className="text-white/80 text-base font-light leading-relaxed">
-                {movie?.sinopsis}
+                {movieDetail?.synopsis}
               </p>
             </div>
           </div>
@@ -42,12 +67,12 @@ function MovieDetails() {
             <div>
               <h3 className="text-white font-semibold text-lg mb-2">Géneros</h3>
               <div className="flex flex-wrap gap-2">
-                {movie?.generos.map((g) => (
+                {movieDetail?.genres.map((g) => (
                   <span
-                    key={g}
+                    key={g.id}
                     className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full"
                   >
-                    {g}
+                    {g.name}
                   </span>
                 ))}
               </div>
@@ -57,7 +82,7 @@ function MovieDetails() {
                 Peso del Archivo
               </h3>
               <p className="text-white/80 text-base font-light">
-                {movie?.peso} GB
+                {movieDetail?.sizeGb} GB
               </p>
             </div>
           </div>

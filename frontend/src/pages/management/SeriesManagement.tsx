@@ -1,26 +1,283 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { series as seriesMock } from "../../mocks/series";
 import Pagination from "../../components/Pagination";
 import { usePaginatedData } from "../../hooks/PaginationHook";
-import { mockPaginate } from "../../mocks/mockPaginate";
+import type { Options } from "../../types/MultiSelectTypes";
+import type { CompleteSerie } from "../../types/Types";
+import { toast, ToastContainer } from "react-toastify";
 
 function SeriesManagement() {
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  // Token
+  const token = localStorage.getItem("accesToken");
 
-  const genresOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+  // Ids de géneros
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
 
-  const fetchSeries = useCallback(async (page: number, limit: number) => {
-    return Promise.resolve(mockPaginate(seriesMock, page, limit));
-  }, []);
+  // Géneros traidos del backend
+  const [genres, setGenres] = useState<Options[]>([]);
 
+  // Plataformas traidas del backend
+  const [platforms, setPlatforms] = useState<Options[]>([]);
+
+  // Archivo de imagen
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Saber si se está editando
+  const [editingSerieId, setEditingSerieId] = useState<number | null>(null);
+
+  // Para refrescar la tabla
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Estado del formulario
+  const [formData, setFormData] = useState({
+    title: "",
+    synopsis: "",
+    platformId: "",
+    seasons: "",
+    sizeGb: "",
+    coverImg: "",
+  });
+
+  // Función que refresa la tabla
+  const refreshTable = () => {
+    setRefreshKey((k) => k + 1);
+  };
+
+  // Función que valida el formulario
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!formData.title || formData.title.trim().length < 4) {
+      errors.push("El título debe tener al menos 4 caracteres");
+    }
+
+    if (!formData.synopsis || formData.synopsis.trim().length < 10) {
+      errors.push("La sinopsis debe tener al menos 10 caracteres");
+    }
+
+    if (!formData.platformId) {
+      errors.push("Debes seleccionar una plataforma");
+    }
+
+    if (!formData.sizeGb || parseFloat(formData.sizeGb) <= 0) {
+      errors.push("El peso en GB debe ser mayor a 0");
+    }
+
+    if (!formData.seasons || Number(formData.seasons) <= 0) {
+      errors.push("El número de temporadas debe ser mayor a 0");
+    }
+
+    if (!imageFile && !formData.coverImg) {
+      errors.push("Debes subir una imagen de portada");
+    }
+
+    if (selectedGenres.length === 0) {
+      errors.push("Debes seleccionar al menos un género");
+    }
+
+    return errors;
+  };
+
+  // Función que resetea el formulario
+  const resetForm = () => {
+    setEditingSerieId(null);
+    setFormData({
+      title: "",
+      synopsis: "",
+      platformId: "",
+      seasons: "",
+      sizeGb: "",
+      coverImg: "",
+    });
+    setSelectedGenres([]);
+    setImageFile(null);
+  };
+
+  // Traer géneros y directores al cargar el componente
+  useEffect(() => {
+    const fetchGenres = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/genres", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando géneros");
+        throw new Error("Error cargando géneros");
+      }
+
+      const genresData = await res.json();
+      setGenres(genresData);
+    };
+
+    const fetchPlatforms = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/platforms", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando plataformas");
+        throw new Error("Error cargando plataformas");
+      }
+
+      const platformsData = await res.json();
+      setPlatforms(platformsData);
+    };
+
+    fetchGenres();
+    fetchPlatforms();
+  }, [token]);
+
+  // Traer películas
+  const fetchSeries = useCallback(
+    async (page: number, limit: number) => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+      const res = await fetch(
+        `http://localhost:3000/api/v1/series/admin?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        toast.error("Error cargando series");
+        throw new Error("Error cargando series");
+      }
+
+      return res.json();
+    },
+    [token, refreshKey],
+  );
+
+  // Paginación y datos de series
   const {
     data: series,
     currentPage,
     totalPages,
     setCurrentPage,
     loading,
-  } = usePaginatedData(fetchSeries, 5);
+  } = usePaginatedData<CompleteSerie>(fetchSeries, 5);
+
+  // Manejador para subir imágen
+  const uploadImageHandle = async (): Promise<string> => {
+    if (!imageFile) throw new Error("Sin imágen seleccionada");
+
+    const data = new FormData();
+    data.append("image", imageFile);
+
+    const res = await fetch("http://localhost:3000/api/v1/upload/image", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: data,
+    });
+
+    if (!res.ok) {
+      toast.error("Error subiendo imágen");
+      throw new Error("Error subiendo imágen");
+    }
+
+    const { url } = await res.json();
+    toast.success("Imágen subida correctamente a Cloudinary");
+    return url;
+  };
+
+  // Manejador para enviar formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors = validateForm();
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.error(err));
+      return;
+    }
+
+    let coverImgUrl = formData.coverImg;
+
+    if (imageFile) {
+      coverImgUrl = await uploadImageHandle();
+    }
+
+    const payload = {
+      title: formData.title,
+      synopsis: formData.synopsis,
+      platformId: Number(formData.platformId),
+      seasons: parseInt(formData.seasons),
+      sizeGb: parseFloat(formData.sizeGb),
+      coverImg: coverImgUrl,
+      genreIds: selectedGenres,
+    };
+
+    const url = editingSerieId
+      ? `http://localhost:3000/api/v1/series/${editingSerieId}`
+      : `http://localhost:3000/api/v1/series`;
+
+    const method = editingSerieId ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      toast.error("Error guardando serie");
+      throw new Error("Error guardando serie");
+    }
+
+    toast.success("Serie guardada correctamente");
+    resetForm();
+    refreshTable();
+  };
+
+  // Manejador para eliminar
+  const handleDelete = async (id: number) => {
+    const confirmDelete = confirm("¿Seguro que deseas eliminar esta serie?");
+    if (!confirmDelete) return;
+
+    const res = await fetch(`http://localhost:3000/api/v1/series/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      toast.success("Error eliminando serie");
+      throw new Error("Error eliminando serie");
+    }
+
+    toast.success("Serie eliminada correctamente");
+    refreshTable();
+  };
+
+  // Manejador para editar
+  const handleEdit = (serie: CompleteSerie) => {
+    setEditingSerieId(serie.id);
+
+    setFormData({
+      title: serie.title,
+      synopsis: serie.synopsis,
+      platformId: String(serie.platformId),
+      seasons: String(serie.seasons),
+      sizeGb: String(serie.sizeGb),
+      coverImg: serie.coverImg,
+    });
+
+    setSelectedGenres(serie.genres.map((g) => g.id));
+  };
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -28,8 +285,42 @@ function SeriesManagement() {
         {/* FORMULARIO */}
         <section>
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
-            Añadir / Editar Serie
+            {editingSerieId ? "Editar Serie" : "Añadir Nueva Serie"}
           </h2>
+
+          {/* BANNER DE EDICIÓN (solo cuando está editando) */}
+          {editingSerieId && (
+            <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="16"
+                    width="16"
+                    viewBox="0 0 512 512"
+                    fill="#60a5fa"
+                  >
+                    <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-blue-300">
+                    Modo edición activo
+                  </p>
+                  <p className="text-sm text-blue-400/80">
+                    Editando serie #{editingSerieId}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-400/20"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
           <div className="bg-white/5 p-6 rounded-lg border border-white/10">
             <form className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="flex flex-col">
@@ -41,6 +332,10 @@ function SeriesManagement() {
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                     placeholder="e.g., Cyberpunk 2077"
                     name="title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -48,19 +343,20 @@ function SeriesManagement() {
                 <label className="text-white text-sm font-medium leading-normal pb-2">
                   Plataforma
                 </label>
-                <select className="form-select flex w-full min-w-0 flex-1 overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 p-3 text-base font-normal leading-normal">
-                  <option disabled selected>
-                    Seleccionar plataforma
-                  </option>
-                  <option className="text-primary" value="1">
-                    Netflix
-                  </option>
-                  <option className="text-primary" value="2">
-                    HBO Max
-                  </option>
-                  <option className="text-primary" value="3">
-                    Amazon Prime Video
-                  </option>
+                <select
+                  className="form-select flex w-full min-w-0 flex-1 overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 p-3 text-base font-normal leading-normal"
+                  name="platformId"
+                  value={formData.platformId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, platformId: e.target.value })
+                  }
+                >
+                  <option disabled>Seleccionar Plataforma</option>
+                  {platforms.map((p) => (
+                    <option key={p.id} value={p.id} className="text-primary">
+                      {p.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex flex-col">
@@ -69,9 +365,13 @@ function SeriesManagement() {
                 </label>
                 <input
                   type="number"
-                  name="temporades"
+                  name="seasons"
                   className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                   placeholder="e.g., 2"
+                  value={formData.seasons}
+                  onChange={(e) =>
+                    setFormData({ ...formData, seasons: e.target.value })
+                  }
                 />
               </div>
 
@@ -85,6 +385,10 @@ function SeriesManagement() {
                     name="weight"
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                     placeholder="e.g., 70.5"
+                    value={formData.sizeGb}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sizeGb: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -97,7 +401,11 @@ function SeriesManagement() {
                   <textarea
                     name="synopsis"
                     className="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary min-h-28 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
-                    placeholder="Describe brevemente el videojuego..."
+                    placeholder="Describe brevemente la serie..."
+                    value={formData.synopsis}
+                    onChange={(e) =>
+                      setFormData({ ...formData, synopsis: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -111,6 +419,11 @@ function SeriesManagement() {
                     type="file"
                     accept="image/*"
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setImageFile(e.target.files[0]);
+                      }
+                    }}
                   />
                 </label>
               </div>
@@ -121,7 +434,7 @@ function SeriesManagement() {
                     Géneros
                   </p>
                   <MultiSelect
-                    options={genresOptions}
+                    options={genres}
                     label="Géneros"
                     selected={selectedGenres}
                     setSelected={setSelectedGenres}
@@ -133,6 +446,7 @@ function SeriesManagement() {
                 <button
                   type="submit"
                   className="flex max-w-sm items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 px-8 hover:bg-primary/90 transition-colors cursor-pointer"
+                  onClick={handleSubmit}
                 >
                   Guardar Serie
                 </button>
@@ -148,6 +462,7 @@ function SeriesManagement() {
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
             Listado de Series
           </h2>
+
           <div className="overflow-x-auto shadow-md sm:rounded-lg bg-white/5 border border-white/10 rounded-lg">
             <table className="w-full text-sm text-left text-white/80 min-w-[900px]">
               <thead className="text-xs text-white uppercase bg-white/5">
@@ -172,26 +487,26 @@ function SeriesManagement() {
                     <td className="px-6 py-4">{s.id}</td>
                     <td className="px-6 py-4">
                       <img
-                        src={s.imageUrl}
-                        alt={s.nombre}
+                        src={s.coverImg}
+                        alt={s.title}
                         className="w-16 h-20 object-cover rounded-md"
                       />
                     </td>
                     <td className="px-6 py-4 font-medium text-white">
-                      {s.nombre}
+                      {s.title}
                     </td>
-                    <td className="px-6 py-4 max-w-xs ">{s.sinopsis}</td>
-                    <td className="px-6 py-4">{s.plataforma}</td>
-                    <td className="px-6 py-4">{s.temporadas}</td>
-                    <td className="px-6 py-4 text-center">{s.peso}</td>
+                    <td className="px-6 py-4 max-w-xs ">{s.synopsis}</td>
+                    <td className="px-6 py-4">{s.platform}</td>
+                    <td className="px-6 py-4">{s.seasons}</td>
+                    <td className="px-6 py-4 text-center">{s.sizeGb}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-2">
-                        {s.generos.map((g) => (
+                        {s.genres.map((g) => (
                           <span
-                            key={g}
+                            key={g.id}
                             className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full"
                           >
-                            {g}
+                            {g.name}
                           </span>
                         ))}
                       </div>
@@ -202,7 +517,7 @@ function SeriesManagement() {
                         <button
                           title="Editar"
                           className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                          onClick={() => console.log("Editar", s.id)}
+                          onClick={() => handleEdit(s)}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -221,7 +536,7 @@ function SeriesManagement() {
                         <button
                           title="Eliminar"
                           className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                          onClick={() => console.log("Eliminar", s.id)}
+                          onClick={() => handleDelete(s.id)}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -249,6 +564,7 @@ function SeriesManagement() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+      <ToastContainer position="top-right" autoClose={3000} />
     </main>
   );
 }

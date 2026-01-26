@@ -3,7 +3,7 @@ import type { PaginatedResponse } from "../types/Types";
 
 export function usePaginatedData<T>(
   fetcher: (page: number, limit: number) => Promise<PaginatedResponse<T>>,
-  limit = 5
+  limit = 6,
 ) {
   const [data, setData] = useState<T[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +21,7 @@ export function usePaginatedData<T>(
         if (!isMounted) return;
 
         setData(res.data);
-        setTotalPages(res.totalPages);
+        setTotalPages(Math.ceil(res.total / limit));
       } finally {
         if (isMounted) setLoading(false);
       }

@@ -1,38 +1,68 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { movies as moviesMock } from "../../mocks/movies.js";
 import Card from "../../components/Card.js";
 import Pagination from "../../components/Pagination.js";
 import { usePaginatedData } from "../../hooks/PaginationHook.js";
-import { mockPaginateFiltered } from "../../mocks/mockPaginateFiltered.js";
+import type { VisualContent } from "../../types/Types.js";
+import type { Options } from "../../types/MultiSelectTypes.js";
+import { toast } from "react-toastify";
 
 function MoviesCatalog() {
   const [search, setSearch] = useState("");
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-  const genreOptions = ["Terror", "Acción", "Aventura", "Drama", "Bélico"];
+  const token = localStorage.getItem("accesToken");
 
-  const moviesForCatalog = useMemo(
-    () =>
-      moviesMock.map((m) => ({
-        ...m,
-        tags: m.generos,
-      })),
-    []
-  );
+  const [genres, setGenres] = useState<Options[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/genres", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando géneros");
+        throw new Error("Error cargando géneros");
+      }
+
+      const genres = await res.json();
+      setGenres(genres);
+    };
+
+    fetchGenres();
+  }, [token]);
 
   const fetchMovies = useCallback(
     async (page: number, limit: number) => {
-      return Promise.resolve(
-        mockPaginateFiltered(moviesForCatalog, {
-          page,
-          limit,
-          search,
-          tags: selectedGenres,
-        })
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      if (search) {
+        params.append("search", search);
+      }
+
+      if (selectedGenres.length) {
+        params.append("genres", selectedGenres.join(","));
+      }
+
+      const res = await fetch(
+        `http://localhost:3000/api/v1/movies/catalog?${params}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
+
+      if (!res.ok) {
+        toast.error("Error cargando películas");
+        throw new Error("Error al cargar películas");
+      }
+
+      return res.json();
     },
-    [search, selectedGenres, moviesForCatalog]
+    [search, selectedGenres, token],
   );
 
   const {
@@ -41,7 +71,7 @@ function MoviesCatalog() {
     totalPages,
     setCurrentPage,
     loading,
-  } = usePaginatedData(fetchMovies, 6);
+  } = usePaginatedData<VisualContent>(fetchMovies, 6);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -63,7 +93,7 @@ function MoviesCatalog() {
         </label>
 
         <MultiSelect
-          options={genreOptions}
+          options={genres}
           label="Géneros"
           selected={selectedGenres}
           setSelected={setSelectedGenres}
@@ -73,15 +103,15 @@ function MoviesCatalog() {
       {loading && <p className="text-white/60">Cargando...</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {movies.map((p) => (
+        {movies.map((m) => (
           <Card
-            id={p.id}
+            id={m.id}
             type="movie"
-            key={p.id}
-            title={p.nombre}
-            imageUrl={p.imageUrl}
-            sinopsis={p.sinopsis}
-            tags={p.generos}
+            key={m.id}
+            title={m.title}
+            coverImg={m.coverImg}
+            synopsis={m.synopsis}
+            tags={m.genres}
           ></Card>
         ))}
       </div>

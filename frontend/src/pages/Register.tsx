@@ -1,13 +1,80 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import type { BackendError } from "../types/Types";
 
 function Register() {
   // Estados para mostrar/ocultar
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
   const togglePassword = () => setShowPassword((prev) => !prev);
   const toggleConfirm = () => setShowConfirm((prev) => !prev);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async () => {
+    setErrors({});
+    setLoading(true);
+
+    if (form.password !== form.confirmPassword) {
+      setErrors({ confirmPassword: "Las contraseñas no coinciden" });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data: BackendError & number = await res.json();
+
+      if (!res.ok) {
+        if (data.errors) {
+          setErrors(data.errors);
+        } else if (data.message) {
+          setErrors({ general: data.message });
+        } else {
+          setErrors({ general: "Error desconocido" });
+        }
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = "/";
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrors({ general: error.message });
+      } else {
+        setErrors({ general: "Error desconocido" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4">
@@ -24,20 +91,32 @@ function Register() {
                 Nombre de usuario
               </p>
               <input
+                name="username"
+                value={form.username}
+                onChange={handleChange}
                 className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary border-none bg-[#492222] h-14 placeholder:text-[#cb9090] p-4"
                 placeholder="Introduce tu nombre de usuario"
               />
             </label>
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name}</p>
+            )}
 
             {/* Email */}
             <label className="flex flex-col w-full">
               <p className="text-white text-base font-medium pb-2">Email</p>
               <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
                 className="form-input flex w-full rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary border-none bg-[#492222] h-14 placeholder:text-[#cb9090] p-4"
                 placeholder="Introduce tu email"
                 type="email"
               />
             </label>
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
 
             {/* Contraseña */}
             <label className="flex flex-col w-full">
@@ -47,6 +126,9 @@ function Register() {
 
               <div className="flex w-full items-stretch rounded-lg bg-[#492222] focus-within:ring-2 focus-within:ring-primary">
                 <input
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
                   className="form-input flex w-full text-white bg-transparent h-14 placeholder:text-[#cb9090] p-4 pr-2 focus:outline-0"
                   placeholder="Introduce tu contraseña"
                   type={showPassword ? "text" : "password"}
@@ -87,6 +169,9 @@ function Register() {
                 </button>
               </div>
             </label>
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
 
             {/* Confirmar contraseña */}
             <label className="flex flex-col w-full">
@@ -96,6 +181,9 @@ function Register() {
 
               <div className="flex w-full items-stretch rounded-lg bg-[#492222] focus-within:ring-2 focus-within:ring-primary">
                 <input
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
                   className="form-input flex w-full text-white bg-transparent h-14 placeholder:text-[#cb9090] p-4 pr-2 focus:outline-0"
                   placeholder="Confirma tu contraseña"
                   type={showConfirm ? "text" : "password"}
@@ -136,9 +224,14 @@ function Register() {
                 </button>
               </div>
             </label>
-
-            <button className="flex items-center justify-center w-full h-14 px-6 mt-4 rounded-lg bg-primary text-white text-base font-bold leading-normal tracking-wide hover:bg-red-700 transition-colors cursor-pointer">
-              Registrarse
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+            )}
+            <button
+              className="flex items-center justify-center w-full h-14 px-6 mt-4 rounded-lg bg-primary text-white text-base font-bold leading-normal tracking-wide hover:bg-red-700 transition-colors cursor-pointer"
+              onClick={handleSubmit}
+            >
+              {loading ? "Registrando..." : "Registrarse"}
             </button>
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-400">

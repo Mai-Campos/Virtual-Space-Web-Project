@@ -1,19 +1,22 @@
-import type { MultiSelectProps } from "../types/Types";
+import type { MultiSelectProps } from "../types/MultiSelectTypes";
 
 export default function MultiSelect({
-  options,
+  options = [],
   label,
   selected,
   setSelected,
 }: MultiSelectProps) {
   const handleAdd = (value: string) => {
     if (!value) return;
-    if (selected.includes(value)) return;
-    setSelected([...selected, value]);
+
+    const id = Number(value);
+
+    if (selected.includes(id)) return;
+    setSelected([...selected, id]);
   };
 
-  const removeItem = (value: string) => {
-    setSelected(selected.filter((item) => item !== value));
+  const removeItem = (id: number) => {
+    setSelected(selected.filter((item) => item !== id));
   };
 
   return (
@@ -26,30 +29,34 @@ export default function MultiSelect({
           {label}
         </option>
         {options.map((op) => (
-          <option key={op} value={op} className="text-primary">
-            {op}
+          <option key={op.id} value={op.id} className="text-primary">
+            {op.name}
           </option>
         ))}
       </select>
 
       {/* Chips */}
       <div className="flex flex-wrap gap-2">
-        {selected.map((item) => (
-          <span
-            key={item}
-            className="flex items-center gap-1 bg-primary/80 text-white text-sm px-3 py-1 rounded-full"
-          >
-            {item}
-
-            <button
-              type="button"
-              className="text-white/70 hover:text-white"
-              onClick={() => removeItem(item)}
+        {selected.map((id) => {
+          const option = options.find((op) => op.id === id);
+          if (!option) return null;
+          return (
+            <span
+              key={id}
+              className="flex items-center gap-1 bg-primary/80 text-white text-sm px-3 py-1 rounded-full"
             >
-              ✕
-            </button>
-          </span>
-        ))}
+              {option.name}
+
+              <button
+                type="button"
+                className="text-white/70 hover:text-white"
+                onClick={() => removeItem(id)}
+              >
+                ✕
+              </button>
+            </span>
+          );
+        })}
       </div>
     </div>
   );

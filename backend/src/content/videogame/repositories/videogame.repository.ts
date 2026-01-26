@@ -52,8 +52,16 @@ export class VideogameRepository {
     SELECT
   c.id,
   c.title,
+  c.synopsis,
   c.cover_img AS "coverImg",
-  ARRAY_AGG(DISTINCT ca.name) AS categories
+   JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', ca.id,
+      'name', ca.name
+    )
+  ) AS categories,
+
+   ARRAY_AGG(DISTINCT ca.id) AS "categoryIds"
 FROM contents c
 JOIN videogames v ON v.content_id = c.id
 JOIN videogame_categories vc ON vc.videogame_id = c.id
@@ -167,13 +175,14 @@ LIMIT $4 OFFSET $5
       c.size_gb AS "sizeGb",
 
       
+   JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', ca.id,
+      'name', ca.name
+    )
+  ) AS categories,
 
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', ca.id,
-          'name', ca.name
-        )
-      ) AS categories
+  ARRAY_AGG(DISTINCT ca.id) AS "categoryIds"
 
     FROM contents c
     JOIN videogames v ON v.content_id = c.id

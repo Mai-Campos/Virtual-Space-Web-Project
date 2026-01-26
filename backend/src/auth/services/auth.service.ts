@@ -9,6 +9,7 @@ import { UserRepository } from 'src/user/repositories/user.repository';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/role/enums/role.enum';
 import { LoginDto } from '../dtos/login.dto';
+import { LoginResponseDto } from '../dtos/login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
   async register(dto: CreateUserDto): Promise<number> {
     const existing = await this.repo.findByEmail(dto.email);
 
-    if (existing) throw new ConflictException('Email  already in use');
+    if (existing) throw new ConflictException('El email ya está en uso');
 
     const saltRounds = 10;
 
@@ -36,14 +37,15 @@ export class AuthService {
     return userId;
   }
 
-  async login(dto: LoginDto): Promise<{ accesToken: string }> {
+  async login(dto: LoginDto): Promise<LoginResponseDto> {
     const user = await this.repo.findByEmail(dto.email);
 
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException('Credenciales inválidas');
 
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
 
-    if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
+    if (!passwordMatch)
+      throw new UnauthorizedException('Credenciales inválidas');
 
     const payload = {
       sub: user.id,
@@ -53,6 +55,11 @@ export class AuthService {
 
     return {
       accesToken: this.jwt.sign(payload, { secret: process.env.JWT_SECRET }),
+      user: {
+        id: user.id,
+        email: user.email,
+        roles: user.roles,
+      },
     };
   }
 }

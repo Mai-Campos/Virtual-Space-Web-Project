@@ -1,28 +1,28 @@
 import { Link } from "react-router-dom";
 import type { MediaCardProps } from "../types/Types";
 
-function Card({ title, imageUrl, sinopsis, tags, type, id }: MediaCardProps) {
+function Card({ title, coverImg, synopsis, tags, type, id }: MediaCardProps) {
   return (
     <div className="flex flex-col bg-white/5 rounded-lg overflow-hidden group ">
       <div className="relative overflow-hidden">
         <img
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           data-alt="A lone spaceship drifts in the vastness of space near a nebula"
-          src={imageUrl}
+          src={coverImg}
         />
       </div>
       <div className="p-4 flex flex-col grow">
         <h3 className="text-white text-lg font-bold">{title}</h3>
-        <p className="text-white/70 text-sm mt-2 grow">{sinopsis}</p>
+        <p className="text-white/70 text-sm mt-2 grow">{synopsis}</p>
 
-        {tags.length > 0 && (
+        {tags?.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {tags.map((tag) => (
               <span
-                key={tag}
+                key={tag.id}
                 className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full"
               >
-                {tag}
+                {tag.name}
               </span>
             ))}
           </div>

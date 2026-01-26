@@ -46,8 +46,18 @@ export class MovieRepository {
     SELECT
   c.id,
   c.title,
+  c.synopsis,
   c.cover_img AS "coverImg",
-  ARRAY_AGG(DISTINCT g.name) AS genres
+  
+   JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
+
+  ARRAY_AGG(DISTINCT g.id) AS "genreIds"
+
 FROM contents c
 JOIN movies m ON m.content_id = c.id
 JOIN movie_genres mg ON mg.movie_id = c.id
@@ -91,18 +101,17 @@ LIMIT $4 OFFSET $5
       c.synopsis,
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
+      d.name as director,
 
-      json_build_object(
-        'id', d.id,
-        'name', d.name
-      ) AS director,
+     JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
 
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', g.id,
-          'name', g.name
-        )
-      ) AS genres
+  ARRAY_AGG(DISTINCT g.id) AS "genreIds"
+
 
     FROM contents c
     JOIN movies m ON m.content_id = c.id
@@ -112,7 +121,7 @@ LIMIT $4 OFFSET $5
 
     WHERE c.content_type = 'movie'
 
-    GROUP BY c.id, d.id
+    GROUP BY c.id, d.name
     ORDER BY c.id DESC
     LIMIT $1 OFFSET $2
     `,
@@ -165,18 +174,16 @@ LIMIT $4 OFFSET $5
       c.synopsis,
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
+      d.name AS director,
 
-      json_build_object(
-        'id', d.id,
-        'name', d.name
-      ) AS director,
+       JSON_AGG(
+    DISTINCT JSONB_BUILD_OBJECT(
+      'id', g.id,
+      'name', g.name
+    )
+  ) AS genres,
 
-      json_agg(
-        DISTINCT jsonb_build_object(
-          'id', g.id,
-          'name', g.name
-        )
-      ) AS genres
+   ARRAY_AGG(DISTINCT g.id) AS "genreIds"
 
     FROM contents c
     JOIN movies m ON m.content_id = c.id
@@ -187,7 +194,7 @@ LIMIT $4 OFFSET $5
     WHERE c.id = $1
       AND c.content_type = $2
 
-    GROUP BY c.id, d.id
+    GROUP BY c.id, d.name
     `,
       [id, ContentType.MOVIE],
     );

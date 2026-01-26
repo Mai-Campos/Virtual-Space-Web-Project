@@ -7,15 +7,21 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
+  @IsString({ message: 'Email debe ser una cadena de texto' })
+  @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
+  @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   name: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Email inválido' })
+  @IsNotEmpty({ message: 'El email no puede estar vacío' })
   email: string;
 
-  @IsStrongPassword()
+  @IsStrongPassword(
+    {},
+    {
+      message:
+        'La contraseña debe tener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos',
+    },
+  )
   password: string;
 }

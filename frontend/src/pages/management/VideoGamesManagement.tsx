@@ -1,26 +1,251 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { videogames as videogamesMock } from "../../mocks/videogames";
 import Pagination from "../../components/Pagination";
 import { usePaginatedData } from "../../hooks/PaginationHook";
-import { mockPaginate } from "../../mocks/mockPaginate";
+import { toast, ToastContainer } from "react-toastify";
+import type { Options } from "../../types/MultiSelectTypes";
+import type { VideoGame } from "../../types/Types";
 
 function VideoGamesManagement() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  // Token
+  const token = localStorage.getItem("accesToken");
 
-  const categoryOptions = ["RPG", "Acción", "Aventura", "Shooter", "Rol"];
+  // Ids de categorías
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
-  const fetchVideogames = useCallback(async (page: number, limit: number) => {
-    return Promise.resolve(mockPaginate(videogamesMock, page, limit));
-  }, []);
+  // Si se está editando
+  const [editingVideogameId, setEditingVideogameId] = useState<number | null>(
+    null,
+  );
 
+  // Archivo de imágen
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Estado para refrescar la tabla
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Categorias traidas desde el backed
+  const [categories, setCategories] = useState<Options[]>([]);
+
+  // Estado del formulario
+  const [formData, setFormData] = useState({
+    title: "",
+    synopsis: "",
+    sizeGb: "",
+    coverImg: "",
+  });
+
+  // Función que refresa la tabla
+  const refreshTable = () => {
+    setRefreshKey((k) => k + 1);
+  };
+
+  // Función que valida el formulario
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!formData.title || formData.title.trim().length < 4) {
+      errors.push("El título debe tener al menos 4 caracteres");
+    }
+
+    if (!formData.synopsis || formData.synopsis.trim().length < 10) {
+      errors.push("La sinopsis debe tener al menos 10 caracteres");
+    }
+
+    if (!formData.sizeGb || parseFloat(formData.sizeGb) <= 0) {
+      errors.push("El peso en GB debe ser mayor a 0");
+    }
+
+    if (!imageFile && !formData.coverImg) {
+      errors.push("Debes subir una imagen de portada");
+    }
+
+    if (selectedCategories.length === 0) {
+      errors.push("Debes seleccionar al menos una categoría");
+    }
+
+    return errors;
+  };
+
+  // Función que resetea el formulario
+  const resetForm = () => {
+    setEditingVideogameId(null);
+    setFormData({
+      title: "",
+      synopsis: "",
+      sizeGb: "",
+      coverImg: "",
+    });
+    setSelectedCategories([]);
+    setImageFile(null);
+  };
+
+  // Traer categorías
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/categories", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando categorias");
+        throw new Error("Error cargando categorías");
+      }
+
+      const categoriesData = await res.json();
+      setCategories(categoriesData);
+    };
+
+    fetchCategories();
+  }, [token]);
+
+  // Traer videojuegos
+  const fetchVideogames = useCallback(
+    async (page: number, limit: number) => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+      const res = await fetch(
+        `http://localhost:3000/api/v1/videogames/admin?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        toast.error("Error cargando videojuegos");
+        throw new Error("Error cargando videojuegos");
+      }
+
+      return res.json();
+    },
+    [token, refreshKey],
+  );
+
+  // Paginación y datos de videojuegos
   const {
     data: videogames,
     currentPage,
     totalPages,
     setCurrentPage,
     loading,
-  } = usePaginatedData(fetchVideogames, 5);
+  } = usePaginatedData<VideoGame>(fetchVideogames, 5);
+
+  // Manejador para subir imágen
+  const uploadImageHandle = async (): Promise<string> => {
+    if (!imageFile) throw new Error("Sin imágen seleccionada");
+
+    const data = new FormData();
+    data.append("image", imageFile);
+
+    const res = await fetch("http://localhost:3000/api/v1/upload/image", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: data,
+    });
+
+    if (!res.ok) {
+      toast.error("Error subiendo imágen");
+      throw new Error("Error subiendo imágen");
+    }
+
+    const { url } = await res.json();
+    toast.success("Imágen subida correctamente a Cloudinary");
+    return url;
+  };
+
+  // Manejador para enviar formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors = validateForm();
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.error(err));
+      return;
+    }
+
+    let coverImgUrl = formData.coverImg;
+
+    if (imageFile) {
+      coverImgUrl = await uploadImageHandle();
+    }
+
+    const payload = {
+      title: formData.title,
+      synopsis: formData.synopsis,
+      sizeGb: parseFloat(formData.sizeGb),
+      coverImg: coverImgUrl,
+      categoryIds: selectedCategories,
+    };
+
+    const url = editingVideogameId
+      ? `http://localhost:3000/api/v1/videogames/${editingVideogameId}`
+      : `http://localhost:3000/api/v1/videogames`;
+
+    const method = editingVideogameId ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      toast.error("Error guardando videojuego");
+      throw new Error("Error guardando videojuego");
+    }
+
+    toast.success("Videojuego guardado correctamente");
+    resetForm();
+    refreshTable();
+  };
+
+  // Manejador para eliminar
+  const handleDelete = async (id: number) => {
+    const confirmDelete = confirm(
+      "¿Seguro que deseas eliminar este videojuego?",
+    );
+    if (!confirmDelete) return;
+
+    const res = await fetch(`http://localhost:3000/api/v1/videogames/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      toast.error("Error eliminando videojuego");
+      throw new Error("Error eliminando videojuego");
+    }
+
+    toast.success("Vieeojuego eliminado correctamente");
+    refreshTable();
+  };
+
+  // Manejador para editar
+  const handleEdit = (videogame: VideoGame) => {
+    setEditingVideogameId(videogame.id);
+
+    setFormData({
+      title: videogame.title,
+      synopsis: videogame.synopsis,
+      sizeGb: String(videogame.sizeGb),
+      coverImg: videogame.coverImg,
+    });
+
+    setSelectedCategories(videogame.categories.map((c) => c.id));
+  };
 
   return (
     <main className="flex-1 mt-6 p-4">
@@ -28,8 +253,44 @@ function VideoGamesManagement() {
         {/* FORMULARIO */}
         <section>
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
-            Añadir / Editar Videojuego
+            {editingVideogameId
+              ? "Editar Videojuego"
+              : "Añadir Nuevo Videojuego"}
           </h2>
+
+          {/* BANNER DE EDICIÓN (solo cuando está editando) */}
+          {editingVideogameId && (
+            <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="16"
+                    width="16"
+                    viewBox="0 0 512 512"
+                    fill="#60a5fa"
+                  >
+                    <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-blue-300">
+                    Modo edición activo
+                  </p>
+                  <p className="text-sm text-blue-400/80">
+                    Editando videojuego #{editingVideogameId}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-400/20"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
           <div className="bg-white/5 p-6 rounded-lg border border-white/10">
             <form className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="flex flex-col">
@@ -38,9 +299,13 @@ function VideoGamesManagement() {
                     Título
                   </p>
                   <input
+                    value={formData.title}
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                     placeholder="e.g., Cyberpunk 2077"
                     name="title"
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -55,6 +320,10 @@ function VideoGamesManagement() {
                     name="weight"
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                     placeholder="e.g., 70.5"
+                    value={formData.sizeGb}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sizeGb: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -68,6 +337,10 @@ function VideoGamesManagement() {
                     name="synopsis"
                     className="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary min-h-28 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
                     placeholder="Describe brevemente el videojuego..."
+                    value={formData.synopsis}
+                    onChange={(e) =>
+                      setFormData({ ...formData, synopsis: e.target.value })
+                    }
                   />
                 </label>
               </div>
@@ -81,6 +354,11 @@ function VideoGamesManagement() {
                     type="file"
                     accept="image/*"
                     className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 focus:border-primary h-12 placeholder:text-white/40 p-3 text-base font-normal leading-normal"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setImageFile(e.target.files[0]);
+                      }
+                    }}
                   />
                 </label>
               </div>
@@ -91,7 +369,7 @@ function VideoGamesManagement() {
                     Categorías
                   </p>
                   <MultiSelect
-                    options={categoryOptions}
+                    options={categories}
                     label="Categorías"
                     selected={selectedCategories}
                     setSelected={setSelectedCategories}
@@ -103,8 +381,9 @@ function VideoGamesManagement() {
                 <button
                   type="submit"
                   className="flex max-w-sm items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 px-8 hover:bg-primary/90 transition-colors cursor-pointer"
+                  onClick={handleSubmit}
                 >
-                  Guardar Videojuego
+                  {editingVideogameId ? "Guardar Cambios" : "Añadir Videojuego"}
                 </button>
               </div>
             </form>
@@ -118,6 +397,7 @@ function VideoGamesManagement() {
           <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">
             Listado de Videojuegos
           </h2>
+
           <div className="overflow-x-auto shadow-md sm:rounded-lg bg-white/5 border border-white/10 rounded-lg">
             <table className="w-full text-sm text-left text-white/80 min-w-[900px]">
               <thead className="text-xs text-white uppercase bg-white/5">
@@ -140,25 +420,25 @@ function VideoGamesManagement() {
                     <td className="px-6 py-4">{v.id}</td>
                     <td className="px-6 py-4">
                       <img
-                        src={v.imageUrl}
-                        alt={v.nombre}
+                        src={v.coverImg}
+                        alt={v.title}
                         className="w-16 h-20 object-cover rounded-md"
                       />
                     </td>
                     <td className="px-6 py-4 font-medium text-white">
-                      {v.nombre}
+                      {v.title}
                     </td>
-                    <td className="px-6 py-4 max-w-xs ">{v.sinopsis}</td>
+                    <td className="px-6 py-4 max-w-xs ">{v.synopsis}</td>
 
-                    <td className="px-6 py-4 text-center">{v.peso}</td>
+                    <td className="px-6 py-4 text-center">{v.sizeGb}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-2">
-                        {v.categorias.map((c) => (
+                        {v.categories.map((c) => (
                           <span
-                            key={c}
+                            key={c.id}
                             className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full"
                           >
-                            {c}
+                            {c.name}
                           </span>
                         ))}
                       </div>
@@ -169,7 +449,7 @@ function VideoGamesManagement() {
                         <button
                           title="Editar"
                           className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                          onClick={() => console.log("Editar", v.id)}
+                          onClick={() => handleEdit(v)}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -188,7 +468,7 @@ function VideoGamesManagement() {
                         <button
                           title="Eliminar"
                           className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                          onClick={() => console.log("Eliminar", v.id)}
+                          onClick={() => handleDelete(v.id)}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -216,6 +496,7 @@ function VideoGamesManagement() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+      <ToastContainer position="top-right" autoClose={3000} />
     </main>
   );
 }

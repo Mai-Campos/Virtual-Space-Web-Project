@@ -4,10 +4,18 @@ import { QueryBasePaginatedDto } from 'src/content/common/dtos/query-base-pagina
 
 export class QueryMoviePaginatedDto extends QueryBasePaginatedDto {
   @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.map(Number);
+    }
+
+    if (typeof value === 'string') {
+      return value.split(',').map(Number);
+    }
+
+    return [];
+  })
   @IsArray()
   @IsInt({ each: true })
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value.map(Number) : [Number(value)],
-  )
   genres?: number[];
 }

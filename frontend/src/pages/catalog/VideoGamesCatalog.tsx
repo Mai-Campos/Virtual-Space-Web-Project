@@ -1,39 +1,73 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
-import { videogames as videogamesMock } from "../../mocks/videogames";
 import Card from "../../components/Card";
 import Pagination from "../../components/Pagination";
-import { mockPaginateFiltered } from "../../mocks/mockPaginateFiltered";
 import { usePaginatedData } from "../../hooks/PaginationHook";
+import type { VideoGame } from "../../types/Types";
+import type { Options } from "../../types/MultiSelectTypes";
+import { toast } from "react-toastify";
 
 function VideoGamesCatalog() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const token = localStorage.getItem("accesToken");
 
-  const categoryOptions = ["RPG", "Acción", "Aventura", "Rol", "Shooter"];
+  const [categories, setCategories] = useState<Options[]>([]);
+
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res = await fetch("http://localhost:3000/api/v1/categories", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        toast.error("Error cargando categorías");
+        throw new Error("Error cargando categorías");
+      }
+
+      const categories = await res.json();
+      setCategories(categories);
+    };
+
+    fetchCategories();
+  }, [token]);
 
   const [search, setSearch] = useState("");
 
-  const videogamesForCatalog = useMemo(
-    () =>
-      videogamesMock.map((v) => ({
-        ...v,
-        tags: v.categorias,
-      })),
-    []
-  );
-
   const fetchVideogames = useCallback(
     async (page: number, limit: number) => {
-      return Promise.resolve(
-        mockPaginateFiltered(videogamesForCatalog, {
-          page,
-          limit,
-          search,
-          tags: selectedCategories,
-        })
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      if (search) {
+        params.append("search", search);
+      }
+
+      if (selectedCategories.length > 0) {
+        params.append("categories", selectedCategories.join(","));
+      }
+
+      const res = await fetch(
+        `http://localhost:3000/api/v1/videogames/catalog?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
+
+      if (!res.ok) {
+        toast.error("Error cargando videojuegos");
+        throw new Error("Error cargando videojuegos");
+      }
+
+      return res.json();
     },
-    [search, selectedCategories, videogamesForCatalog]
+    [search, selectedCategories, token],
   );
 
   const {
@@ -42,7 +76,7 @@ function VideoGamesCatalog() {
     totalPages,
     setCurrentPage,
     loading,
-  } = usePaginatedData(fetchVideogames, 6);
+  } = usePaginatedData<VideoGame>(fetchVideogames, 6);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -64,7 +98,7 @@ function VideoGamesCatalog() {
         </label>
 
         <MultiSelect
-          options={categoryOptions}
+          options={categories}
           label="Categorías"
           selected={selectedCategories}
           setSelected={setSelectedCategories}
@@ -79,10 +113,10 @@ function VideoGamesCatalog() {
             id={v.id}
             key={v.id}
             type="videogame"
-            title={v.nombre}
-            imageUrl={v.imageUrl}
-            sinopsis={v.sinopsis}
-            tags={v.categorias}
+            title={v.title}
+            coverImg={v.coverImg}
+            synopsis={v.synopsis}
+            tags={v.categories}
           />
         ))}
       </div>

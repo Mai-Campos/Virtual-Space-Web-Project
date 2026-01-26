@@ -20,13 +20,14 @@ import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/role/enums/role.enum';
 
-@UseGuards(AuthenticationGuard, RolesGuard)
-@Roles(Role.ADMIN, Role.EMPLOYEE)
+@UseGuards(AuthenticationGuard)
 @Controller('genres')
 export class GenreController {
   constructor(private readonly genreService: GenreService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EMPLOYEE)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGenreDto: CreateGenreDto): Promise<Genre> {
     return await this.genreService.create(createGenreDto);
@@ -38,6 +39,8 @@ export class GenreController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EMPLOYEE)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGenreDto: UpdateGenreDto,
@@ -46,6 +49,8 @@ export class GenreController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.EMPLOYEE)
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', ParseIntPipe) id: number) {
     return await this.genreService.delete(id);
