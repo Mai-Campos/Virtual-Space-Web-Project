@@ -25,7 +25,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     });
 
     await this.pool.query('SELECT 1');
-    this.logger.log('PostgreSQL connected');
+    this.logger.log('PostgreSQL conectado');
   }
 
   async query<T extends QueryResultRow>(
@@ -33,13 +33,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     params?: any[],
   ): Promise<QueryResult<T>> {
     if (!this.pool)
-      throw new InternalServerErrorException('Database pool not initialized');
+      throw new InternalServerErrorException(
+        'Pool de Base de Datos no inicializado',
+      );
 
     return this.pool.query<T>(sql, params);
   }
 
   async onModuleDestroy() {
     await this.pool.end();
-    this.logger.log('PostgreSQL disconnected');
+    this.logger.log('PostgreSQL desconectado');
   }
 }

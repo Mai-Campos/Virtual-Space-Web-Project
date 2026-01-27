@@ -27,7 +27,7 @@ export class PlatformService {
     const updated = await this.repo.update(updatePlatformDto, id);
 
     if (!updated)
-      throw new NotFoundException(`Platform with id: ${id} not found`);
+      throw new NotFoundException(`Plataforma con id: ${id} no encontrada`);
 
     return updated;
   }
@@ -37,12 +37,12 @@ export class PlatformService {
       const deleted = await this.repo.delete(id);
 
       if (!deleted)
-        throw new NotFoundException(`Platform with id: ${id} not found`);
+        throw new NotFoundException(`Plataforma con id: ${id} no encontrada`);
     } catch (error) {
       const pgError = error as { code?: string };
       if (pgError.code === '23503') {
         throw new ConflictException(
-          `Cannot delete Platform with id: ${id} because it is referenced by other records`,
+          `No se puede eliminar la plataforma con id: ${id} porque está siendo referenciada por otro registro`,
         );
       }
 

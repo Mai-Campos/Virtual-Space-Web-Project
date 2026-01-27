@@ -13,7 +13,7 @@ export class UploadService implements OnModuleInit {
     });
   }
   async uploadImage(file: Express.Multer.File): Promise<string> {
-    if (!file) throw new BadRequestException('No image provided');
+    if (!file) throw new BadRequestException('Sin imagen proporcionada');
 
     const result = await cloudinary.uploader.upload(
       `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,

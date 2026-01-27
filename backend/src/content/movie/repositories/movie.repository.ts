@@ -101,7 +101,7 @@ LIMIT $4 OFFSET $5
       c.synopsis,
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
-      d.name as director,
+      d.name AS director,
 
      JSON_AGG(
     DISTINCT JSONB_BUILD_OBJECT(

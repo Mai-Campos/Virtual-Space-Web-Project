@@ -56,7 +56,7 @@ export class VideogameService {
     const videogame = await this.repo.findById(id);
 
     if (!videogame)
-      throw new NotFoundException(`Videogame with id: ${id} not found`);
+      throw new NotFoundException(`Videojuego con id: ${id} no encontrado`);
 
     return videogame;
   }
@@ -65,11 +65,11 @@ export class VideogameService {
     const videogame = await this.repo.findById(id);
 
     if (!videogame)
-      throw new NotFoundException(`Videogame with id: ${id} not found`);
+      throw new NotFoundException(`Videojuego con id: ${id} no encontrado`);
 
     const updated = await this.repo.updateContent(dto, id);
 
-    if (updated === 0) throw new BadRequestException('Nothing was updated');
+    if (updated === 0) throw new BadRequestException('Nada fue actualizado');
 
     if (dto.categoryIds) {
       await this.repo.replaceCategories(id, dto.categoryIds);
@@ -80,6 +80,6 @@ export class VideogameService {
     const deleted = await this.repo.delete(id);
 
     if (!deleted)
-      throw new NotFoundException(`Videogame with id: ${id} not found`);
+      throw new NotFoundException(`Videojuego con id: ${id} no encontrado`);
   }
 }

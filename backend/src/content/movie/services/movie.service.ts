@@ -55,7 +55,8 @@ export class MovieService {
   async findById(id: number): Promise<CompleteMovieDto> {
     const movie = await this.repo.findById(id);
 
-    if (!movie) throw new NotFoundException(`Movie with id: ${id} not found`);
+    if (!movie)
+      throw new NotFoundException(`Película con id: ${id} no encontrada`);
 
     return movie;
   }
@@ -63,11 +64,12 @@ export class MovieService {
   async update(dto: UpdateMovieDto, id: number): Promise<void> {
     const movie = await this.repo.findById(id);
 
-    if (!movie) throw new NotFoundException(`Movie with id: ${id} not found`);
+    if (!movie)
+      throw new NotFoundException(`Película con id: ${id} no encontrada`);
 
     const updated = await this.repo.updateContent(dto, id);
 
-    if (updated === 0) throw new BadRequestException('Nothing was updated');
+    if (updated === 0) throw new BadRequestException('Nada fue actualizado');
 
     if (typeof dto.directorId === 'number' && !Number.isNaN(dto.directorId)) {
       await this.repo.updateDirector(id, dto.directorId);
@@ -81,6 +83,7 @@ export class MovieService {
   async delete(id: number): Promise<void> {
     const deleted = await this.repo.delete(id);
 
-    if (!deleted) throw new NotFoundException(`Movie with id: ${id} not found`);
+    if (!deleted)
+      throw new NotFoundException(`Película con id: ${id} no encontrada`);
   }
 }

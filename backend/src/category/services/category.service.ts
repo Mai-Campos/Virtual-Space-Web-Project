@@ -27,7 +27,7 @@ export class CategoryService {
     const updatedCategory = await this.repo.update(updateCategoryDto, id);
 
     if (!updatedCategory)
-      throw new NotFoundException(`Category with id: ${id} not found`);
+      throw new NotFoundException(`Categoría con id: ${id} no encontrada`);
 
     return updatedCategory;
   }
@@ -37,13 +37,13 @@ export class CategoryService {
       const deleted = await this.repo.delete(id);
 
       if (!deleted) {
-        throw new NotFoundException(`Category with id: ${id} not found`);
+        throw new NotFoundException(`Categoría con id: ${id} no encontrada`);
       }
     } catch (error: any) {
       const pgError = error as { code?: string };
       if (pgError.code === '23503') {
         throw new ConflictException(
-          `Cannot delete category with id: ${id} because it is referenced by other records`,
+          `No se puede eliminar la categoría con id: ${id} porque está siendo referenciada por otro registro`,
         );
       }
 

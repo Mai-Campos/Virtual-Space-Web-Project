@@ -17,7 +17,7 @@ export class AuthenticationGuard implements CanActivate {
 
     const token = this.extractToken(request);
 
-    if (!token) throw new UnauthorizedException('Missing token');
+    if (!token) throw new UnauthorizedException('Token faltante');
 
     try {
       const payload = await this.jwt.verifyAsync<JwtPayload>(token);
@@ -25,7 +25,7 @@ export class AuthenticationGuard implements CanActivate {
       request['user'] = payload;
       return true;
     } catch {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException('Token inválido o expirado');
     }
   }
 

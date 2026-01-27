@@ -30,11 +30,12 @@ export class RolesGuard implements CanActivate {
 
     const user = request.user;
 
-    if (!user || !user.roles) throw new ForbiddenException('No roles assigned');
+    if (!user || !user.roles)
+      throw new ForbiddenException('Sin roles asignados');
 
     const hasRoles = requiredRoles.some((role) => user.roles.includes(role));
 
-    if (!hasRoles) throw new ForbiddenException('Acces denied');
+    if (!hasRoles) throw new ForbiddenException('Acceso denegado');
 
     return true;
   }

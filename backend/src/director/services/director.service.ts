@@ -27,7 +27,7 @@ export class DirectorService {
     const updated = await this.repo.update(updateDirectorDto, id);
 
     if (!updated)
-      throw new NotFoundException(`Director with id: ${id} not found`);
+      throw new NotFoundException(`Director con id: ${id} no encontrado`);
 
     return updated;
   }
@@ -37,12 +37,12 @@ export class DirectorService {
       const deleted = await this.repo.delete(id);
 
       if (!deleted)
-        throw new NotFoundException(`Director with id: ${id} not found`);
+        throw new NotFoundException(`Director con id: ${id} no encontrado`);
     } catch (error) {
       const pgError = error as { code?: string };
       if (pgError.code === '23503') {
         throw new ConflictException(
-          `Cannot delete director with id: ${id} because it is referenced by other records`,
+          `No se puede eliminar el director con id: ${id} porque está siendo referenciado por otro registro`,
         );
       }
 

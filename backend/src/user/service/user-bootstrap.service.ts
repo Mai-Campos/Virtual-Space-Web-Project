@@ -20,7 +20,7 @@ export class UserBootsrapService implements OnModuleInit {
     const existing = await this.repo.findByEmail(adminEmail);
 
     if (existing) {
-      this.logger.log('Admin already exist');
+      this.logger.log('Ya existe un usuario administrador');
       return;
     }
 
@@ -39,6 +39,6 @@ export class UserBootsrapService implements OnModuleInit {
       Role.USER,
     ]);
 
-    this.logger.log('Admin created succefully');
+    this.logger.log('Administrador creado correctamente');
   }
 }

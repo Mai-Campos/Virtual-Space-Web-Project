@@ -36,7 +36,7 @@ export class CategoryRepository {
 
   async delete(id: number): Promise<boolean> {
     const result = await this.databaseService.query<Category>(
-      'DELETE FROm categories WHERE id = $1',
+      'DELETE FROM categories WHERE id = $1',
       [id],
     );
 

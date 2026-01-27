@@ -44,9 +44,8 @@ describe('MovieController', () => {
     jest.clearAllMocks();
   });
 
-  // --------------------------
   // Test getMovieCatalog
-  // --------------------------
+
   describe('getMovieCatalog', () => {
     it('should call movieService.findCatalog and return result', async () => {
       const dto: QueryMoviePaginatedDto = { page: 1, limit: 5 };
@@ -73,9 +72,8 @@ describe('MovieController', () => {
     });
   });
 
-  // --------------------------
   // Test getAdminMovie
-  // --------------------------
+
   describe('getAdminMovie', () => {
     it('should call movieService.findAdminPaginated and return result', async () => {
       const dto: QueryAdminPaginatedDto = { page: 1, limit: 5 };
@@ -109,9 +107,8 @@ describe('MovieController', () => {
     });
   });
 
-  // --------------------------
   // Test getMovieById
-  // --------------------------
+
   describe('getMovieById', () => {
     it('should call movieService.findById and return movie', async () => {
       const movie: CompleteMovieDto = {
@@ -136,9 +133,8 @@ describe('MovieController', () => {
     });
   });
 
-  // --------------------------
   // Test createMovie
-  // --------------------------
+
   describe('createMovie', () => {
     it('should call movieService.create and return new movie id', async () => {
       const dto: CreateMovieDto = {
@@ -158,9 +154,8 @@ describe('MovieController', () => {
     });
   });
 
-  // --------------------------
   // Test updateMovie
-  // --------------------------
+
   describe('updateMovie', () => {
     it('should call movieService.update with dto and id', async () => {
       const dto: UpdateMovieDto = { title: 'Updated Movie' };
@@ -173,9 +168,8 @@ describe('MovieController', () => {
     });
   });
 
-  // --------------------------
   // Test deleteMovie
-  // --------------------------
+
   describe('deleteMovie', () => {
     it('should call movieService.delete with id', async () => {
       mockMovieService.delete.mockResolvedValue(undefined);

@@ -55,7 +55,7 @@ export class SerieService {
   async findById(id: number): Promise<CompleteSerieDto> {
     const serie = await this.repo.findById(id);
 
-    if (!serie) throw new NotFoundException(`Serie with id: ${id} not found`);
+    if (!serie) throw new NotFoundException(`Serie con id: ${id} no enontrada`);
 
     return serie;
   }
@@ -63,11 +63,11 @@ export class SerieService {
   async update(dto: UpdateSerieDto, id: number): Promise<void> {
     const serie = await this.repo.findById(id);
 
-    if (!serie) throw new NotFoundException(`Serie with id: ${id} not found`);
+    if (!serie) throw new NotFoundException(`Serie con id: ${id} no enontrada`);
 
     const updated = await this.repo.updateContent(dto, id);
 
-    if (updated === 0) throw new BadRequestException('Nothing was updated');
+    if (updated === 0) throw new BadRequestException('Nada fue actualizado');
 
     if (typeof dto.platformId === 'number' && !Number.isNaN(dto.platformId)) {
       await this.repo.updatePlatform(id, dto.platformId);
@@ -85,6 +85,7 @@ export class SerieService {
   async delete(id: number): Promise<void> {
     const deleted = await this.repo.delete(id);
 
-    if (!deleted) throw new NotFoundException(`Serie with id: ${id} not found`);
+    if (!deleted)
+      throw new NotFoundException(`Serie con id: ${id} no enontrada`);
   }
 }

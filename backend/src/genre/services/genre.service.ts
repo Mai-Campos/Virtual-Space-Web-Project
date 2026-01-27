@@ -23,7 +23,8 @@ export class GenreService {
   async update(updateGenreDto: UpdateGenreDto, id: number): Promise<Genre> {
     const updated = await this.repo.update(updateGenreDto, id);
 
-    if (!updated) throw new NotFoundException(`Genre with id: ${id} not found`);
+    if (!updated)
+      throw new NotFoundException(`Género con id: ${id} no encontrado`);
 
     return updated;
   }
@@ -32,12 +33,12 @@ export class GenreService {
     try {
       const deleted = await this.repo.delete(id);
       if (!deleted)
-        throw new NotFoundException(`Director with id: ${id} not found`);
+        throw new NotFoundException(`G;énero con id: ${id} no encontrado`);
     } catch (error) {
       const pgError = error as { code?: string };
       if (pgError.code === '23503') {
         throw new ConflictException(
-          `Cannot delete director with id: ${id} because it is referenced by other records`,
+          `No se puede eliminar el género con id: ${id} porque está siendo referenciado por otro registro`,
         );
       }
 

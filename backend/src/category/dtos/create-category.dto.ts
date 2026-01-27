@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateCategoryDto {
-  @IsString({ message: 'Name must be a string' })
-  @IsNotEmpty({ message: 'Name cannot be empty' })
-  @MinLength(3, { message: 'Name must be at least 3 characters long' })
+  @IsString({ message: 'El nombre debe ser una cadena de texto válida' })
+  @IsNotEmpty({ message: 'El nombre es obligatorio' })
+  @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   name: string;
 }

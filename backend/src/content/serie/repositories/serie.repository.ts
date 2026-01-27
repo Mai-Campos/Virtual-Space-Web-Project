@@ -104,7 +104,7 @@ LIMIT $4 OFFSET $5
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
       s.seasons,
-      p.name as platform,
+      p.name AS platform,
 
       
 
@@ -179,7 +179,7 @@ LIMIT $4 OFFSET $5
       c.cover_img AS "coverImg",
       c.size_gb AS "sizeGb",
       s.seasons,
-      p.name as platform,
+      p.name AS platform,
 
        JSON_AGG(
     DISTINCT JSONB_BUILD_OBJECT(

@@ -20,7 +20,7 @@ export class UserService {
     // Comprobar si no existe un usuario con el email
     const existing = await this.repo.findByEmail(dto.email);
 
-    if (existing) throw new ConflictException('Email already in use');
+    if (existing) throw new ConflictException('Email en uso');
 
     // Hashear password
     const saltRounds = 10;
@@ -45,7 +45,7 @@ export class UserService {
     const user = await this.repo.findByEmail(email);
 
     if (!user)
-      throw new NotFoundException(`User with email ${email} not found`);
+      throw new NotFoundException(`Usuario con email ${email} no encontrado`);
 
     return user;
   }
@@ -54,17 +54,18 @@ export class UserService {
     const updated = await this.repo.updateEmployee(dto, id);
 
     if (!updated) {
-      throw new NotFoundException(`User with id: ${id} not found`);
+      throw new NotFoundException(`Usuario con id: ${id} no encontrado`);
     }
 
     const hasUserData = dto.name !== undefined || dto.email !== undefined;
 
-    if (!hasUserData) throw new BadRequestException(`Nothing was updated`);
+    if (!hasUserData) throw new BadRequestException(`Nada fue actualizado`);
   }
 
   async delete(id: number): Promise<void> {
     const deleted = await this.repo.deleteEmployee(id);
 
-    if (!deleted) throw new NotFoundException(`User with id: ${id} not found`);
+    if (!deleted)
+      throw new NotFoundException(`Usuario con id: ${id} no encontrado`);
   }
 }

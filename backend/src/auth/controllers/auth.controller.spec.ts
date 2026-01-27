@@ -27,9 +27,7 @@ describe('AuthController', () => {
     jest.clearAllMocks();
   });
 
-  // --------------------------
   // Test register
-  // --------------------------
   describe('register', () => {
     it('should call authService.register and return userId', async () => {
       const dto: CreateUserDto = {
@@ -58,9 +56,7 @@ describe('AuthController', () => {
     });
   });
 
-  // --------------------------
   // Test login
-  // --------------------------
   describe('login', () => {
     it('should call authService.login and return LoginResponseDto', async () => {
       const dto: LoginDto = { email: 'test@test.com', password: '123456' };

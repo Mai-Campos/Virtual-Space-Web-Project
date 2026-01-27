@@ -39,9 +39,8 @@ describe('UserController', () => {
     jest.clearAllMocks();
   });
 
-  // --------------------------
   // Test create
-  // --------------------------
+
   describe('create', () => {
     it('should call userService.create and return result', async () => {
       const dto: CreateUserDto = {
@@ -62,15 +61,14 @@ describe('UserController', () => {
         email: 'test@test.com',
         password: '123456',
         name: 'Test User',
-        roles: [Role.EMPLOYEE], // o 'employee' literal
+        roles: [Role.EMPLOYEE],
       });
       expect(service.create).toHaveBeenCalledWith(dto);
     });
   });
 
-  // --------------------------
   // Test findAllEmployees
-  // --------------------------
+
   describe('findAllEmployees', () => {
     it('should call userService.findEmployees and return result', async () => {
       const employees = [
@@ -86,9 +84,8 @@ describe('UserController', () => {
     });
   });
 
-  // --------------------------
   // Test findByEmail
-  // --------------------------
+
   describe('findByEmail', () => {
     it('should call userService.findByEmail and return user', async () => {
       const user = { id: 1, email: 'test@test.com' };
@@ -101,9 +98,8 @@ describe('UserController', () => {
     });
   });
 
-  // --------------------------
   // Test update
-  // --------------------------
+
   describe('update', () => {
     it('should call userService.update and return updated user', async () => {
       const dto: UpdateEmployeeDto = { email: 'new@test.com' };
@@ -117,9 +113,8 @@ describe('UserController', () => {
     });
   });
 
-  // --------------------------
   // Test delete
-  // --------------------------
+
   describe('delete', () => {
     it('should call userService.delete with id', async () => {
       mockUserService.delete.mockResolvedValue(undefined);
