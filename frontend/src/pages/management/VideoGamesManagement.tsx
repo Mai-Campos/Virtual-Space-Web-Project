@@ -57,7 +57,7 @@ function VideoGamesManagement() {
     }
 
     if (!imageFile && !formData.coverImg) {
-      errors.push("Debes subir una imagen de portada");
+      errors.push("Debes subir una imágen de portada");
     }
 
     if (selectedCategories.length === 0) {
@@ -464,7 +464,7 @@ function VideoGamesManagement() {
                           </svg>
                         </button>
 
-                        {/* 🗑ELIMINAR */}
+                        {/* ELIMINAR */}
                         <button
                           title="Eliminar"
                           className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

@@ -124,7 +124,7 @@ function PlatformManagement() {
 
         const message = Array.isArray(errorBody.message)
           ? errorBody.message.join(", ")
-          : errorBody.message || "Error al eliminar serie";
+          : errorBody.message || "Error al eliminar plataforma";
 
         if (errorBody.statusCode === 409) {
           throw new Error(
@@ -265,7 +265,7 @@ function PlatformManagement() {
                         </svg>
                       </button>
 
-                      {/* 🗑ELIMINAR */}
+                      {/* ELIMINAR */}
                       <button
                         title="Eliminar"
                         className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

@@ -121,7 +121,7 @@ function GenreManagement() {
 
         const message = Array.isArray(errorBody.message)
           ? errorBody.message.join(", ")
-          : errorBody.message || "Error al eliminar director";
+          : errorBody.message || "Error al eliminar género";
 
         if (errorBody.statusCode === 409) {
           throw new Error(
@@ -261,7 +261,7 @@ function GenreManagement() {
                         </svg>
                       </button>
 
-                      {/* 🗑ELIMINAR */}
+                      {/* ELIMINAR */}
                       <button
                         title="Eliminar"
                         className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

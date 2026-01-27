@@ -403,7 +403,7 @@ function EmployeesManagement() {
                           </svg>
                         </button>
 
-                        {/* 🗑ELIMINAR */}
+                        {/* ELIMINAR */}
                         <button
                           title="Eliminar"
                           className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

@@ -97,7 +97,7 @@ function DirectorManagement() {
     });
 
     if (!res.ok) {
-      toast("Error gaurdando director");
+      toast("Error guardando director");
       throw new Error("Error guardando director");
     }
 
@@ -267,7 +267,7 @@ function DirectorManagement() {
                         </svg>
                       </button>
 
-                      {/* 🗑ELIMINAR */}
+                      {/* ELIMINAR */}
                       <button
                         title="Eliminar"
                         className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

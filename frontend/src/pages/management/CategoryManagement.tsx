@@ -125,7 +125,7 @@ function CategoryManagement() {
 
         const message = Array.isArray(errorBody.message)
           ? errorBody.message.join(", ")
-          : errorBody.message || "Error al eliminar director";
+          : errorBody.message || "Error al eliminar categoría";
 
         if (errorBody.statusCode === 409) {
           throw new Error(
@@ -268,7 +268,7 @@ function CategoryManagement() {
                         </svg>
                       </button>
 
-                      {/* 🗑ELIMINAR */}
+                      {/* ELIMINAR */}
                       <button
                         title="Eliminar"
                         className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"

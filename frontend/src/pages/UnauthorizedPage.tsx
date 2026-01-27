@@ -45,7 +45,7 @@ function UnauthorizedPage() {
           <div className="h-px w-24 bg-linear-to-r from-transparent via-primary/50 to-transparent my-2"></div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:justify-center pt-2">
-            <Link to={"/login"}>
+            <Link to={"/"}>
               <button className="w-full sm:w-auto flex min-w-40 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-red-600 transition-all duration-300 text-white text-sm font-bold tracking-[0.015em] shadow-[0_0_20px_rgba(244,37,37,0.25)] hover:shadow-[0_0_30px_rgba(244,37,37,0.5)] transform hover:-translate-y-0.5">
                 <span className="truncate">Iniciar Sesión</span>
               </button>
